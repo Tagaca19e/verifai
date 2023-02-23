@@ -1,8 +1,10 @@
 import Footer from './footer';
 import Navbar from './navbar';
 import React from 'react';
+import { Session } from 'src/utils/types'; 
+
 interface LayoutProps {
-  session: any;
+  session: Session;
   children: React.ReactNode;
 }
 
