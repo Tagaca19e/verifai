@@ -1,13 +1,15 @@
 import Head from 'next/head';
-import { Inter } from '@next/font/google';
-import { GetServerSideProps } from 'next';
-import { getSession, GetSessionParams } from 'next-auth/react';
 import Layout from '../components/layout';
 import Login from '../components/login';
+import { GetServerSideProps } from 'next';
+import { getSession, GetSessionParams } from 'next-auth/react';
+import { Session } from 'src/utils/types';
 
-const inter = Inter({ subsets: ['latin'] });
+interface HomeProps {
+  session: Session;
+}
 
-export default function Home({ session }: { session: any }) {
+export default function Home({ session }: HomeProps) {
   return (
     <>
       <Head>
@@ -17,8 +19,7 @@ export default function Home({ session }: { session: any }) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <>
-        <Layout>
-          <h1>Home</h1>
+        <Layout session={session}>
           <Login session={session} />
         </Layout>
       </>
@@ -28,14 +29,6 @@ export default function Home({ session }: { session: any }) {
 
 export async function getServerSideProps(context: GetServerSideProps) {
   const session = await getSession(context as GetSessionParams);
-  if (session) {
-    return {
-      redirect: {
-        destination: '/dashboard',
-        permanent: false,
-      },
-    };
-  }
 
   return {
     props: {
