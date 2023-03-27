@@ -5,13 +5,11 @@ import { Session } from 'src/utils/types';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 
-
 // TODO(etagaca): Change to real navigation.
 const navigation = [
-  { name: 'Product', href: '#' },
+  { name: 'About', href: '#' },
   { name: 'Features', href: '#' },
-  { name: 'Marketplace', href: '#' },
-  { name: 'Company', href: '#' },
+  { name: 'GitHub', href: '#' },
 ];
 
 interface NavbarProps {
@@ -32,10 +30,10 @@ export default function Navbar({ session }: NavbarProps) {
             <span className="sr-only">Your Company</span>
             {/* TODO(etagaca): Check for image loaders. */}
             <Image
-              src="/logos/vercel.svg"
+              src="/logos/verifai.svg"
               alt="Verifai Logo"
-              width={100}
-              height={100}
+              width={50}
+              height={50}
             />
           </a>
         </div>
@@ -90,7 +88,7 @@ export default function Navbar({ session }: NavbarProps) {
             <a href="#" className="-m-1.5 p-1.5">
               <span className="sr-only">Verifai</span>
               <Image
-                src="/logos/vercel.svg"
+                src="/logos/verifai.svg"
                 alt="Verifai Logo"
                 width={100}
                 height={100}

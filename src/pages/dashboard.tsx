@@ -1,4 +1,6 @@
 import Image from 'next/image';
+import Result from 'src/components/Result';
+import TextInput from '@/components/TextInput';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import { Fragment, useState } from 'react';
 import { GetServerSideProps } from 'next';
@@ -7,22 +9,18 @@ import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { Session } from 'src/utils/types';
 import {
   Bars3BottomLeftIcon,
-  CogIcon,
-  HomeIcon,
+  DocumentCheckIcon,
   PlusIcon,
   RectangleStackIcon,
-  UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 const sidebarNavigation = [
-  { name: 'Home', href: '#', icon: HomeIcon, current: true },
-  { name: 'All Files', href: '#', icon: RectangleStackIcon, current: false },
-  { name: 'Groups', href: '#', icon: UserGroupIcon, current: false },
-  { name: 'Settings', href: '#', icon: CogIcon, current: false },
+  { name: 'Verify', href: '#', icon: DocumentCheckIcon, current: true },
+  { name: 'Files', href: '#', icon: RectangleStackIcon, current: false },
 ];
 const userNavigation = [
-  { name: 'Your Profile', href: '/', onClick: () => {} },
+  { name: 'Profile', href: '/', onClick: () => {} },
   { name: 'Sign out', href: '#', onClick: () => signOut() },
 ];
 
@@ -32,18 +30,16 @@ function classNames(...classes: string[]) {
 
 export default function Dashboard({ session }: { session: Session }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  // Note: session holds the user's data.
-  console.log('session:', session);
 
   return (
     <>
       <div className="flex h-[100vh]">
         {/* Narrow sidebar */}
-        <div className="hidden w-28 overflow-y-auto bg-primary md:block">
+        <div className="hidden w-24 overflow-y-auto bg-primary md:block">
           <div className="flex w-full flex-col items-center py-6">
             <div className="flex flex-shrink-0 items-center">
               <Image
-                src="https://tailwindui.com/img/logos/mark.svg?color=white"
+                src="/logos/verifai.svg"
                 alt="Your Company"
                 width={50}
                 height={100}
@@ -133,7 +129,7 @@ export default function Dashboard({ session }: { session: Session }) {
                   </Transition.Child>
                   <div className="flex flex-shrink-0 items-center px-4">
                     <Image
-                      src="https://tailwindui.com/img/logos/mark.svg?color=white"
+                      src="/logos/verifai.svg"
                       alt="Your Company"
                       width={50}
                       height={100}
@@ -282,12 +278,14 @@ export default function Dashboard({ session }: { session: Session }) {
                   Photos
                 </h1>
                 {/* TODO(etagaca): Add main content here. */}
+                <TextInput />
               </section>
             </main>
 
             {/* Secondary column (hidden on smaller screens) */}
             <aside className="hidden w-96 overflow-y-auto border-l border-gray-200 bg-white lg:block">
               {/* TODO(etagaca): Add secondary content here. */}
+              <Result />
             </aside>
           </div>
         </div>
