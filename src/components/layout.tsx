@@ -1,7 +1,7 @@
-import Footer from './footer';
-import Navbar from './navbar';
+import Footer from './Footer';
+import Navbar from './Navbar';
 import React from 'react';
-import { Session } from 'src/utils/types'; 
+import { Session } from 'src/utils/types';
 
 interface LayoutProps {
   session: Session;

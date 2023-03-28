@@ -1,6 +1,6 @@
 import Head from 'next/head';
-import Layout from '../components/layout';
-import Login from '../components/login';
+import Layout from '../components/Layout';
+import Login from '../components/Login';
 import { GetServerSideProps } from 'next';
 import { getSession, GetSessionParams } from 'next-auth/react';
 import { Session } from 'src/utils/types';
