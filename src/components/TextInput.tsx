@@ -7,11 +7,12 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-export default function Example() {
+export default function TextInput() {
   const textInputRef: RefObject<HTMLDivElement> = useRef(null);
   const { setIsLoading, setResults, setError } =
     useContext<AppContextProps>(AppContext);
 
+  /* Removes all html content from the clipboard. */
   const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
     event.preventDefault();
     let text = event.clipboardData?.getData('text/plain');
@@ -24,6 +25,7 @@ export default function Example() {
     }
   };
 
+  /* Prevents auto creation of div and p elements when typing. */
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Enter') {
       event.preventDefault();
@@ -31,7 +33,23 @@ export default function Example() {
     }
   };
 
-  // TODO(etagaca): Implement clear formatting when users trys to input text.
+  /* Removes all inserted <span> tags from highlighted errors when user tries
+   * to change input. */
+  const handleInput = () => {
+    if (textInputRef.current) {
+      const text = textInputRef.current.innerHTML;
+
+      // Reset the text input from any hightlighted errors, when user tries to
+      // start typing.
+      if (text.match(/<\/?span[\sa-z=\-0-9"]*>/gi)) {
+        const spanElements =
+          textInputRef.current.querySelectorAll<HTMLSpanElement>('span');
+        spanElements.forEach((spanElement) => {
+          spanElement.classList.remove('border-b-2');
+        });
+      }
+    }
+  };
 
   const verifyTextInput = () => {
     function verifySentence(sentence: string) {
@@ -48,7 +66,7 @@ export default function Example() {
 
     let input = textInputRef?.current?.innerHTML || '';
     // Remove all inserted <span> tags from highlighted errors.
-    input = input.replace(/<\/?span.+?>/gi, '');
+    input = input.replace(/<\/?span[\sa-z=\-0-9"]*>/gi, '');
 
     // Reset the text input from any hightlighted errors.
     if (textInputRef.current) textInputRef.current.innerHTML = input;
@@ -76,10 +94,6 @@ export default function Example() {
         setResults(data);
 
         if (textInputRef.current) {
-          // NOTE: test.
-          let testResult = sentences[0];
-          console.log({ data });
-
           // TODO(etagaca): Handle error case when the API returns an error.
           for (let i = 0; i < data.length; i++) {
             const result = data[i];
@@ -153,6 +167,7 @@ export default function Example() {
                     contentEditable
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
+                    onInput={handleInput}
                   ></div>
                 </div>
               </Tab.Panel>
