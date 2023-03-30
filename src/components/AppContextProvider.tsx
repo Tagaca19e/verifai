@@ -1,11 +1,12 @@
 import { AppContextProps } from 'src/utils/interfaces';
 import { createContext, useState } from 'react';
+import { Result } from 'src/utils/interfaces';
 
 export const AppContext = createContext<AppContextProps>({
   isLoading: false,
   setIsLoading: () => {},
-  result: {},
-  setResult: () => {},
+  results: [],
+  setResults: () => {},
   error: '',
   setError: () => {},
 });
@@ -16,7 +17,7 @@ export default function AppContextProvider({
   children: React.ReactNode;
 }) {
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState({});
+  const [results, setResults] = useState<Result[][]>([]);
   const [error, setError] = useState('');
 
   return (
@@ -24,8 +25,8 @@ export default function AppContextProvider({
       value={{
         isLoading,
         setIsLoading,
-        result,
-        setResult,
+        results,
+        setResults,
         error,
         setError,
       }}

@@ -1,139 +1,181 @@
 import { AppContext } from './AppContextProvider';
-import { AppContextProps } from 'src/utils/interfaces';
+import { AppContextProps, Result } from 'src/utils/interfaces';
 import { Tab } from '@headlessui/react';
-import { useContext } from 'react';
+import { useContext, useRef, RefObject } from 'react';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
 export default function Example() {
-  const { setIsLoading, setResult, setError } =
+  const textInputRef: RefObject<HTMLDivElement> = useRef(null);
+  const { setIsLoading, setResults, setError } =
     useContext<AppContextProps>(AppContext);
 
-  interface Group {
-    label: string;
-    score: number;
-  }
-
-  const parseResult = (response: Group[][]) => {
-    const classifierScores = response[0];
-
-    let result: { [key: string]: number } = {};
-    for (let score of classifierScores) {
-      result[score.label] = score.score;
-    }
-    return result;
-  };
-
-  // TODO(etagaca): Convert to an api endpoint in the api folder.
-  const validateInput = async (data: string) => {
-    setIsLoading(true);
-    const response = await fetch(
-      'https://api-inference.huggingface.co/models/Hello-SimpleAI/chatgpt-detector-roberta',
-      {
-        headers: {
-          Authorization: 'Bearer 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',
-        },
-        method: 'POST',
-        body: JSON.stringify({
-          inputs: data,
-        }),
-      }
-    );
-
-    const result = await response.json();
-    if (result.error) {
-      setError(result.error);
-    } else {
-      // NOTE: Model is booting up and is not ready yet.
-      setResult(parseResult(result));
-      setError('');
-    }
-
-    setIsLoading(false);
-    return result;
-  };
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
     event.preventDefault();
-    const target = event.target as typeof event.target & {
-      text: { value: string };
-    };
+    let text = event.clipboardData?.getData('text/plain');
 
-    validateInput(target.text?.value || '').then((response) => {
-      console.log(JSON.stringify(response));
-    });
+    // Replace new lines with <br> tags to make it a list for the senteces.
+    text = text.replace(/\n/g, '<br>');
+
+    if (textInputRef.current) {
+      textInputRef.current.innerHTML += text;
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      document.execCommand('insertLineBreak', false, '');
+    }
+  };
+
+  // TODO(etagaca): Implement clear formatting when users trys to input text.
+
+  const verifyTextInput = () => {
+    function verifySentence(sentence: string) {
+      return fetch('../api/validate-input', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          data: sentence,
+        }),
+      });
+    }
+
+    let input = textInputRef?.current?.innerHTML || '';
+    // Remove all inserted <span> tags from highlighted errors.
+    input = input.replace(/<\/?span.+?>/gi, '');
+
+    // Reset the text input from any hightlighted errors.
+    if (textInputRef.current) textInputRef.current.innerHTML = input;
+
+    let sentences = input ? input.split('<br>') : [];
+
+    // Remove empty strings.
+    sentences = sentences.filter((sentence) => sentence);
+    const promises = [
+      ...sentences.map((sentence: string) => verifySentence(sentence)),
+    ];
+
+    setIsLoading(true);
+    Promise.all(promises)
+      .then((results) => {
+        let data = results.map(async (result) => {
+          let res = await result.json();
+
+          // Catch the errors fro the API.
+          return res[0] || [res];
+        });
+        return Promise.all(data);
+      })
+      .then((data: Result[][]) => {
+        setResults(data);
+
+        if (textInputRef.current) {
+          // NOTE: test.
+          let testResult = sentences[0];
+          console.log({ data });
+
+          // TODO(etagaca): Handle error case when the API returns an error.
+          for (let i = 0; i < data.length; i++) {
+            const result = data[i];
+            let gptScore = 0,
+              humanScore = 0;
+
+            for (let resultType of result) {
+              if (resultType.label === 'ChatGPT') {
+                gptScore = resultType.score || 0;
+              } else if (resultType.label === 'Human') {
+                humanScore = resultType.score || 0;
+              }
+            }
+
+            if (gptScore > humanScore) {
+              textInputRef.current.innerHTML =
+                textInputRef.current.innerHTML.replace(
+                  sentences[i],
+                  `<span class="border-b-2 border-red-400">${sentences[i]}</span>`
+                );
+            }
+          }
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    setIsLoading(false);
   };
 
   return (
     <div className="p-8">
-      <form onSubmit={handleSubmit}>
-        <Tab.Group>
-          {({ selectedIndex }) => (
-            <>
-              <Tab.List className="flex items-center">
-                <Tab
-                  className={({ selected }) =>
-                    classNames(
-                      selected
-                        ? 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                        : 'bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-900',
-                      'rounded-md border border-transparent px-3 py-1.5 text-sm font-medium'
-                    )
-                  }
-                >
-                  Text
-                </Tab>
-                <Tab
-                  className={({ selected }) =>
-                    classNames(
-                      selected
-                        ? 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                        : 'bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-900',
-                      'ml-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium'
-                    )
-                  }
-                >
-                  OCR
-                </Tab>
-              </Tab.List>
-              <Tab.Panels className="mt-2">
-                <Tab.Panel className="-m-0.5 rounded-lg p-0.5">
-                  <label htmlFor="text" className="sr-only">
-                    text
-                  </label>
-                  <div>
-                    <textarea
-                      rows={40}
-                      name="text"
-                      id="text"
-                      className="block w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:py-1.5 sm:text-sm sm:leading-6"
-                      placeholder="Type your text..."
-                      defaultValue={''}
-                    />
+      <Tab.Group>
+        {({ selectedIndex }) => (
+          <>
+            <Tab.List className="flex items-center">
+              <Tab
+                className={({ selected }) =>
+                  classNames(
+                    selected
+                      ? 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                      : 'bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-900',
+                    'rounded-md border border-transparent px-3 py-1.5 text-sm font-medium'
+                  )
+                }
+              >
+                Text
+              </Tab>
+              <Tab
+                className={({ selected }) =>
+                  classNames(
+                    selected
+                      ? 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                      : 'bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-900',
+                    'ml-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium'
+                  )
+                }
+              >
+                OCR
+              </Tab>
+            </Tab.List>
+            <Tab.Panels className="mt-2">
+              <Tab.Panel className="-m-0.5 rounded-lg p-0.5">
+                <label htmlFor="text" className="sr-only">
+                  text
+                </label>
+                <div>
+                  <div
+                    ref={textInputRef}
+                    className="min-h-[600px] w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none"
+                    contentEditable
+                    onKeyDown={handleKeyDown}
+                    onPaste={handlePaste}
+                  ></div>
+                </div>
+              </Tab.Panel>
+              <Tab.Panel className="-m-0.5 rounded-lg p-0.5">
+                <div className="border-b">
+                  <div className="mx-px mt-px px-3 pt-2 pb-12 text-sm leading-5 text-gray-800">
+                    ERROR: NOT YET IMPLEMENTED! :(
                   </div>
-                </Tab.Panel>
-                <Tab.Panel className="-m-0.5 rounded-lg p-0.5">
-                  <div className="border-b">
-                    <div className="mx-px mt-px px-3 pt-2 pb-12 text-sm leading-5 text-gray-800">
-                      ERROR: NOT YET IMPLEMENTED! :(
-                    </div>
-                  </div>
-                </Tab.Panel>
-              </Tab.Panels>
-            </>
-          )}
-        </Tab.Group>
-        <div className="mt-2 flex justify-end">
-          <button
-            type="submit"
-            className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary_dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            Verify
-          </button>
-        </div>
-      </form>
+                </div>
+              </Tab.Panel>
+            </Tab.Panels>
+          </>
+        )}
+      </Tab.Group>
+      <div className="mt-2 flex justify-end">
+        <button
+          type="submit"
+          onClick={verifyTextInput}
+          className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary_dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        >
+          Verify
+        </button>
+      </div>
     </div>
   );
 }
