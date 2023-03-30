@@ -36,17 +36,18 @@ export default function TextInput() {
   /* Removes all inserted <span> tags from highlighted errors when user tries
    * to change input. */
   const handleInput = () => {
+    const selection = window.getSelection();
+    if (!selection) return;
+    console.log(selection);
+
     if (textInputRef.current) {
       const text = textInputRef.current.innerHTML;
 
       // Reset the text input from any hightlighted errors, when user tries to
       // start typing.
       if (text.match(/<\/?span[\sa-z=\-0-9"]*>/gi)) {
-        const spanElements =
-          textInputRef.current.querySelectorAll<HTMLSpanElement>('span');
-        spanElements.forEach((spanElement) => {
-          spanElement.classList.remove('border-b-2');
-        });
+        const paragraphElement = selection.anchorNode?.parentElement;
+        paragraphElement?.classList.remove('border-b-2');
       }
     }
   };
