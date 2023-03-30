@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-// TODO(etagaca): Connect this API to the client side.
 export default async function validateInput(
   req: NextApiRequest,
   res: NextApiResponse
@@ -9,7 +8,7 @@ export default async function validateInput(
     'https://api-inference.huggingface.co/models/Hello-SimpleAI/chatgpt-detector-roberta',
     {
       headers: {
-        Authorization: 'Bearer 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',
+        Authorization: `Bearer ${process.env.HUGGINGFACE_API_TOKEN}`,
       },
       method: 'POST',
       body: JSON.stringify({
@@ -17,7 +16,7 @@ export default async function validateInput(
       }),
     }
   );
-  
+
   const result = await response.json();
-  return result;
+  res.status(200).json(result);
 }
