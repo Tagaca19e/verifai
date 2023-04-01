@@ -1,5 +1,5 @@
 import { AppContext } from './AppContextProvider';
-import { AppContextProps, Result } from 'src/utils/interfaces';
+import { AppContextProps, InputTextResult } from 'src/utils/interfaces';
 import { Tab } from '@headlessui/react';
 import { useContext, useRef, RefObject } from 'react';
 
@@ -9,8 +9,7 @@ function classNames(...classes: string[]) {
 
 export default function TextInput() {
   const textInputRef: RefObject<HTMLDivElement> = useRef(null);
-  const { setIsLoading, setResults, setError } =
-    useContext<AppContextProps>(AppContext);
+  const { setIsLoading, setResults } = useContext<AppContextProps>(AppContext);
 
   /* Removes all html content from the clipboard. */
   const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
@@ -38,8 +37,6 @@ export default function TextInput() {
   const handleInput = () => {
     const selection = window.getSelection();
     if (!selection) return;
-    console.log(selection);
-
     if (textInputRef.current) {
       const text = textInputRef.current.innerHTML;
 
@@ -52,8 +49,8 @@ export default function TextInput() {
     }
   };
 
-  const verifyTextInput = () => {
-    function verifySentence(sentence: string) {
+  const handleSubmit = () => {
+    function verifyText(sentence: string) {
       return fetch('../api/validate-input', {
         method: 'POST',
         headers: {
@@ -66,63 +63,51 @@ export default function TextInput() {
     }
 
     let input = textInputRef?.current?.innerHTML || '';
-    // Remove all inserted <span> tags from highlighted errors.
-    input = input.replace(/<\/?span[\sa-z=\-0-9"]*>/gi, '');
+    // Remove all html elements except <br> tags.
+    input = input.replace(
+      /<(?!br\s*\/?)[a-z][^>]*>|<\/(?!br\s*\/?)[a-z][^>]*>/gi,
+      ''
+    );
 
     // Reset the text input from any hightlighted errors.
     if (textInputRef.current) textInputRef.current.innerHTML = input;
 
-    let sentences = input ? input.split('<br>') : [];
+    let texts = input ? input.split('<br>') : [];
 
     // Remove empty strings.
-    sentences = sentences.filter((sentence) => sentence);
-    const promises = [
-      ...sentences.map((sentence: string) => verifySentence(sentence)),
+    texts = texts.filter((text) => text);
+    const verifyTextApiCalls = [
+      ...texts.map((text: string) => verifyText(text)),
     ];
 
     setIsLoading(true);
-    Promise.all(promises)
+    Promise.all(verifyTextApiCalls)
       .then((results) => {
-        let data = results.map(async (result) => {
-          let res = await result.json();
-
-          // Catch the errors fro the API.
-          return res[0] || [res];
+        let inputTextResults = results.map(async (result) => {
+          return await result.json();
         });
-        return Promise.all(data);
+        return Promise.all(inputTextResults);
       })
-      .then((data: Result[][]) => {
-        setResults(data);
+      .then((inputTextResults: InputTextResult[]) => {
+        setResults(inputTextResults);
 
         if (textInputRef.current) {
           // TODO(etagaca): Handle error case when the API returns an error.
-          for (let i = 0; i < data.length; i++) {
-            const result = data[i];
-            let gptScore = 0,
-              humanScore = 0;
-
-            for (let resultType of result) {
-              if (resultType.label === 'ChatGPT') {
-                gptScore = resultType.score || 0;
-              } else if (resultType.label === 'Human') {
-                humanScore = resultType.score || 0;
-              }
-            }
-
-            if (gptScore > humanScore) {
+          for (let inputTextResult of inputTextResults) {
+            if (inputTextResult.score.gpt > inputTextResult.score.human) {
               textInputRef.current.innerHTML =
                 textInputRef.current.innerHTML.replace(
-                  sentences[i],
-                  `<span class="border-b-2 border-red-400">${sentences[i]}</span>`
+                  inputTextResult.text,
+                  `<span class="border-b-2 border-red-400">${inputTextResult.text}</span>`
                 );
             }
           }
         }
+        setIsLoading(false);
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((error) => {
+        console.log(error);
       });
-    setIsLoading(false);
   };
 
   return (
@@ -186,7 +171,7 @@ export default function TextInput() {
       <div className="mt-2 flex justify-end">
         <button
           type="submit"
-          onClick={verifyTextInput}
+          onClick={handleSubmit}
           className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary_dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
           Verify

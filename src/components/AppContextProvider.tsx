@@ -1,6 +1,5 @@
-import { AppContextProps } from 'src/utils/interfaces';
-import { createContext, useState } from 'react';
-import { Result } from 'src/utils/interfaces';
+import { AppContextProps, InputTextResult } from 'src/utils/interfaces';
+import { createContext, useState, useMemo } from 'react';
 
 export const AppContext = createContext<AppContextProps>({
   isLoading: false,
@@ -16,22 +15,22 @@ export default function AppContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState<Result[][]>([]);
-  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [results, setResults] = useState<InputTextResult[]>([]);
+  const [error, setError] = useState<string>('');
+
+  const contextValue = useMemo(() => {
+    return {
+      isLoading,
+      setIsLoading,
+      results,
+      setResults,
+      error,
+      setError,
+    };
+  }, [isLoading, setIsLoading, results, setResults, error, setError]);
 
   return (
-    <AppContext.Provider
-      value={{
-        isLoading,
-        setIsLoading,
-        results,
-        setResults,
-        error,
-        setError,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
+    <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>
   );
 }
