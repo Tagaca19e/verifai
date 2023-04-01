@@ -1,14 +1,26 @@
-export interface Result {
+export interface HuggingFaceModelResult {
   label?: string;
   score?: number;
+  error?: string;
+}
+
+export interface InputTextResultScore {
+  gpt: number;
+  human: number;
+}
+
+export interface InputTextResult {
+  score: InputTextResultScore;
+  text: string;
+  details: string[];
   error?: string;
 }
 
 export interface AppContextProps {
   isLoading: boolean;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  results: Result[][];
-  setResults: React.Dispatch<React.SetStateAction<Result[][]>>;
+  results: InputTextResult[];
+  setResults: React.Dispatch<React.SetStateAction<InputTextResult[]>>;
   error: string;
   setError: React.Dispatch<React.SetStateAction<string>>;
 }

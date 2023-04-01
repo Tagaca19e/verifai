@@ -1,10 +1,7 @@
 import { AppContext } from './AppContextProvider';
 import { AppContextProps } from 'src/utils/interfaces';
 import { useContext, useEffect, useState } from 'react';
-import {
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-} from '@heroicons/react/20/solid';
+import ResultCard from './ResultCard';
 
 export default function Result() {
   const { isLoading, results, error } = useContext<AppContextProps>(AppContext);
@@ -19,34 +16,26 @@ export default function Result() {
   }, [isLoading, results, error, showResults]);
 
   return (
-    <>
-      {showResults && (
-        <div className="m-3 rounded-md border border-gray-200 bg-success_light p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <CheckCircleIcon
-                className="h-5 w-5 text-success_dark"
-                aria-hidden="true"
-              />
-            </div>
-            <div className="ml-3">
-              {!error ? (
-                <>
-                  <div className="mt-2 text-sm">
-                    <ul>
-                      {results.map((result, idx) => (
-                        <li key={idx}>{JSON.stringify(result)}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </>
-              ) : (
-                <h3 className="text-sm font-medium">Error: {error}</h3>
-              )}
-            </div>
+    <div>
+      {showResults &&
+        results.map((inputTextResult, idx) => (
+          <div key={idx}>
+            {!inputTextResult.error ? (
+              <>
+                <ResultCard inputTextResultScore={inputTextResult.score} />
+                {inputTextResult.details.map((inputTextResultDetail, idx) => (
+                  <ResultCard
+                    key={idx}
+                    inputTextResultDetail={inputTextResultDetail}
+                  />
+                ))}
+              </>
+            ) : (
+              <ResultCard inputTextResultError={inputTextResult.error} />
+            )}
           </div>
-        </div>
-      )}
-    </>
+        ))}
+      {isLoading && <p>Loading...</p>}
+    </div>
   );
 }
