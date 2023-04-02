@@ -5,11 +5,8 @@ import { GetServerSideProps } from 'next';
 import { getSession, GetSessionParams } from 'next-auth/react';
 import { Session } from 'src/utils/types';
 
-interface HomeProps {
-  session: Session;
-}
+export default function Home({ session }: { session: Session }) {
 
-export default function Home({ session }: HomeProps) {
   return (
     <>
       <Head>

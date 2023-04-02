@@ -1,15 +1,59 @@
 import { AppContext } from './AppContextProvider';
-import { AppContextProps, InputTextResult } from 'src/utils/interfaces';
-import { Tab } from '@headlessui/react';
-import { useContext, useRef, RefObject } from 'react';
+import { createId } from '@/utils/helpers';
+import {
+  RefObject,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+  } from 'react';
+import { Session } from 'src/utils/types';
+import {
+  AppContextProps,
+  InputTextResult,
+  UserDocument,
+} from 'src/utils/interfaces';
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
-}
-
-export default function TextInput() {
+export default function TextInput({
+  session,
+  documentTitle,
+}: {
+  session: Session;
+  documentTitle: string;
+}) {
+  const { setIsLoading, results, setResults } =
+    useContext<AppContextProps>(AppContext);
   const textInputRef: RefObject<HTMLDivElement> = useRef(null);
-  const { setIsLoading, setResults } = useContext<AppContextProps>(AppContext);
+
+  const [userDocument, setUserDocument] = useState<UserDocument>({
+    _id: createId(`${documentTitle}${Date.now()}`),
+    owner: session.user.email,
+    title: documentTitle,
+    content: '',
+    results: results,
+  });
+
+  useEffect(() => {
+    const saveUserDocument = async () => {
+      const response = await fetch('../api/save-document', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userDocument),
+      });
+
+      const data = await response.json();
+    };
+    saveUserDocument();
+  }, [userDocument]);
+
+  useEffect(() => {
+    setUserDocument((prevUserDocument) => ({
+      ...prevUserDocument,
+      title: documentTitle,
+    }));
+  }, [documentTitle]);
 
   /* Removes all html content from the clipboard. */
   const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
@@ -22,6 +66,10 @@ export default function TextInput() {
     if (textInputRef.current) {
       textInputRef.current.innerHTML += text;
     }
+    setUserDocument({
+      ...userDocument,
+      content: textInputRef.current?.innerHTML || '',
+    });
   };
 
   /* Prevents auto creation of div and p elements when typing. */
@@ -47,6 +95,10 @@ export default function TextInput() {
         paragraphElement?.classList.remove('border-b-2');
       }
     }
+    setUserDocument({
+      ...userDocument,
+      content: textInputRef.current?.innerHTML || '',
+    });
   };
 
   const handleSubmit = () => {
@@ -90,6 +142,7 @@ export default function TextInput() {
       })
       .then((inputTextResults: InputTextResult[]) => {
         setResults(inputTextResults);
+        setUserDocument({ ...userDocument, results: inputTextResults });
 
         if (textInputRef.current) {
           // TODO(etagaca): Handle error case when the API returns an error.
@@ -112,62 +165,23 @@ export default function TextInput() {
 
   return (
     <div className="p-8">
-      <Tab.Group>
-        {({ selectedIndex }) => (
-          <>
-            <Tab.List className="flex items-center">
-              <Tab
-                className={({ selected }) =>
-                  classNames(
-                    selected
-                      ? 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                      : 'bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-900',
-                    'rounded-md border border-transparent px-3 py-1.5 text-sm font-medium'
-                  )
-                }
-              >
-                Text
-              </Tab>
-              <Tab
-                className={({ selected }) =>
-                  classNames(
-                    selected
-                      ? 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                      : 'bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-900',
-                    'ml-2 rounded-md border border-transparent px-3 py-1.5 text-sm font-medium'
-                  )
-                }
-              >
-                OCR
-              </Tab>
-            </Tab.List>
-            <Tab.Panels className="mt-2">
-              <Tab.Panel className="-m-0.5 rounded-lg p-0.5">
-                <label htmlFor="text" className="sr-only">
-                  text
-                </label>
-                <div>
-                  <div
-                    ref={textInputRef}
-                    className="min-h-[600px] w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none"
-                    contentEditable
-                    onKeyDown={handleKeyDown}
-                    onPaste={handlePaste}
-                    onInput={handleInput}
-                  ></div>
-                </div>
-              </Tab.Panel>
-              <Tab.Panel className="-m-0.5 rounded-lg p-0.5">
-                <div className="border-b">
-                  <div className="mx-px mt-px px-3 pt-2 pb-12 text-sm leading-5 text-gray-800">
-                    ERROR: NOT YET IMPLEMENTED! :(
-                  </div>
-                </div>
-              </Tab.Panel>
-            </Tab.Panels>
-          </>
-        )}
-      </Tab.Group>
+      <div className="mt-2">
+        <div className="-m-0.5 rounded-lg p-0.5">
+          <label htmlFor="text" className="sr-only">
+            text
+          </label>
+          <div>
+            <div
+              ref={textInputRef}
+              className="min-h-[600px] w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none"
+              contentEditable
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              onInput={handleInput}
+            ></div>
+          </div>
+        </div>
+      </div>
       <div className="mt-2 flex justify-end">
         <button
           type="submit"
