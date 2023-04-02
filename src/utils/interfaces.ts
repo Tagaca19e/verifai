@@ -24,3 +24,11 @@ export interface AppContextProps {
   error: string;
   setError: React.Dispatch<React.SetStateAction<string>>;
 }
+
+export interface UserDocument {
+  _id: string;
+  owner: string;
+  title: string;
+  content: string;
+  results: InputTextResult[];
+}

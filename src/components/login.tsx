@@ -1,10 +1,7 @@
 import React from 'react';
+import { Session } from '../utils/types';
 
-interface Props {
-  session: any;
-}
-
-export default function Login({ session }: Props = { session: undefined }) {
+export default function Login({ session }: { session: Session }) {
   return (
     <>
       <h1>Session: {session ? 'Authenticated' : 'Not authenticated'}</h1>
