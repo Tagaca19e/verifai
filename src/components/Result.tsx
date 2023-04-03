@@ -16,7 +16,7 @@ export default function Result() {
   }, [isLoading, results, error, showResults]);
 
   return (
-    <div>
+    <div className="w-full">
       {showResults &&
         results.map((inputTextResult, idx) => (
           <div key={idx}>

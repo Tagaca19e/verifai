@@ -1,12 +1,6 @@
 import { AppContext } from './AppContextProvider';
 import { createId } from '@/utils/helpers';
-import {
-  RefObject,
-  useContext,
-  useEffect,
-  useRef,
-  useState
-  } from 'react';
+import { RefObject, useContext, useEffect, useRef, useState } from 'react';
 import { Session } from 'src/utils/types';
 import {
   AppContextProps,
@@ -17,36 +11,34 @@ import {
 export default function TextInput({
   session,
   documentTitle,
+  savedDocument,
 }: {
   session: Session;
   documentTitle: string;
+  savedDocument?: UserDocument;
 }) {
   const { setIsLoading, results, setResults } =
     useContext<AppContextProps>(AppContext);
   const textInputRef: RefObject<HTMLDivElement> = useRef(null);
-
   const [userDocument, setUserDocument] = useState<UserDocument>({
-    _id: createId(`${documentTitle}${Date.now()}`),
+    _id: savedDocument?._id || createId(`${documentTitle}${Date.now()}`),
     owner: session.user.email,
     title: documentTitle,
-    content: '',
-    results: results,
+    content: savedDocument?.content || '',
+    results: savedDocument?.results || results,
   });
 
+  // Replace content with saved content.
   useEffect(() => {
-    const saveUserDocument = async () => {
-      const response = await fetch('../api/save-document', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userDocument),
-      });
+    if (textInputRef.current) {
+      textInputRef.current.innerHTML = savedDocument?.content || '';
+    }
+  }, [savedDocument?.content]);
 
-      const data = await response.json();
-    };
-    saveUserDocument();
-  }, [userDocument]);
+  // Replace results with saved results.
+  useEffect(() => {
+    setResults(savedDocument?.results || []);
+  }, [savedDocument?.results, setResults]);
 
   useEffect(() => {
     setUserDocument((prevUserDocument) => ({
@@ -54,6 +46,19 @@ export default function TextInput({
       title: documentTitle,
     }));
   }, [documentTitle]);
+
+  useEffect(() => {
+    const saveUserDocument = async () => {
+      await fetch('../api/save-document', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userDocument),
+      });
+    };
+    saveUserDocument();
+  }, [userDocument]);
 
   /* Removes all html content from the clipboard. */
   const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
@@ -145,7 +150,6 @@ export default function TextInput({
         setUserDocument({ ...userDocument, results: inputTextResults });
 
         if (textInputRef.current) {
-          // TODO(etagaca): Handle error case when the API returns an error.
           for (let inputTextResult of inputTextResults) {
             if (inputTextResult.score.gpt > inputTextResult.score.human) {
               textInputRef.current.innerHTML =
@@ -156,6 +160,13 @@ export default function TextInput({
             }
           }
         }
+
+        // Update user document with the new content and results.
+        setUserDocument({
+          ...userDocument,
+          content: textInputRef.current?.innerHTML || '',
+          results: inputTextResults,
+        });
         setIsLoading(false);
       })
       .catch((error) => {
@@ -167,19 +178,14 @@ export default function TextInput({
     <div className="p-8">
       <div className="mt-2">
         <div className="-m-0.5 rounded-lg p-0.5">
-          <label htmlFor="text" className="sr-only">
-            text
-          </label>
-          <div>
-            <div
-              ref={textInputRef}
-              className="min-h-[600px] w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none"
-              contentEditable
-              onKeyDown={handleKeyDown}
-              onPaste={handlePaste}
-              onInput={handleInput}
-            ></div>
-          </div>
+          <div
+            ref={textInputRef}
+            className="min-h-[600px] w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none"
+            contentEditable
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+            onInput={handleInput}
+          ></div>
         </div>
       </div>
       <div className="mt-2 flex justify-end">

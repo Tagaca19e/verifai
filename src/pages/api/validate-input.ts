@@ -43,45 +43,45 @@ export default async function validateInput(
 
     if (inputTextResult.score.gpt > inputTextResult.score.human) {
       // NOTE: OpenAPI returning 429 error. Commented out for now.
-      // try {
-      //   const configuration = new Configuration({
-      //     organization: process.env.OPENAI_ORG_ID,
-      //     apiKey: process.env.OPENAI_API_KEY,
-      //   });
+      try {
+        const configuration = new Configuration({
+          organization: process.env.OPENAI_ORG_ID,
+          apiKey: process.env.OPENAI_API_KEY,
+        });
 
-      //   const openai = new OpenAIApi(configuration);
-      //   const gptResult = await openai.createChatCompletion({
-      //     model: 'gpt-3.5-turbo',
-      //     messages: [
-      //       {
-      //         role: 'user',
-      //         content: `This text is AI generated, give me reasons why it is ai generated in just strictly bulleted points:\n${inputTextResult.text}`,
-      //       },
-      //     ],
-      //   });
+        const openai = new OpenAIApi(configuration);
+        const gptResult = await openai.createChatCompletion({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'user',
+              content: `This text is AI generated, give me reasons why it is ai generated in just strictly bulleted points:\n${inputTextResult.text}`,
+            },
+          ],
+        });
 
-      //   if (gptResult.data.choices[0].message) {
-      //     let details = gptResult.data.choices[0].message.content.split('\n');
+        if (gptResult.data.choices[0].message) {
+          let details = gptResult.data.choices[0].message.content.split('\n');
 
-      //     // Filter out any empty strings.
-      //     details = details.filter((detail) => detail);
+          // Filter out any empty strings.
+          details = details.filter((detail) => detail);
 
-      //     // Replace any bulleted points, character, or numbers within details.
-      //     details = details.map((detail) => detail.replace(/^[^a-z]+\s/gi, ''));
-      //     inputTextResult.details = details;
-      //   }
-      // } catch (openAIAPIError: any) {
-      //   inputTextResult = {
-      //     ...inputTextResult,
-      //     error: openAIAPIError.message,
-      //   };
-      // }
+          // Replace any bulleted points, character, or numbers within details.
+          details = details.map((detail) => detail.replace(/^[^a-z]+\s/gi, ''));
+          inputTextResult.details = details;
+        }
+      } catch (openAIAPIError: any) {
+        inputTextResult = {
+          ...inputTextResult,
+          error: openAIAPIError.message,
+        };
+      }
 
-      inputTextResult.details = [
-        'a reason',
-        'another reason',
-        'yet another reason',
-      ];
+      // inputTextResult.details = [
+      //   'a reason',
+      //   'another reason',
+      //   'yet another reason',
+      // ];
     }
   } else {
     // TODO(etagaca): Think about how to break down long inputs.
