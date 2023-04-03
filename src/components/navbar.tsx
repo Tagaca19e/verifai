@@ -12,11 +12,7 @@ const navigation = [
   { name: 'GitHub', href: '#' },
 ];
 
-interface NavbarProps {
-  session: Session;
-}
-
-export default function Navbar({ session }: NavbarProps) {
+export default function Navbar({ session }: { session: Session }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -28,7 +24,6 @@ export default function Navbar({ session }: NavbarProps) {
         <div className="flex lg:flex-1">
           <a href="#" className="-m-1.5 p-1.5">
             <span className="sr-only">Your Company</span>
-            {/* TODO(etagaca): Check for image loaders. */}
             <Image
               src="/logos/verifai.svg"
               alt="Verifai Logo"
@@ -64,9 +59,9 @@ export default function Navbar({ session }: NavbarProps) {
             onClick={(e) => {
               e.preventDefault();
               if (!session) {
-                signIn('google', { callbackUrl: '/dashboard' });
+                signIn('google', { callbackUrl: '/documents' });
               } else {
-                window.location.href = '/dashboard';
+                window.location.href = '/documents';
               }
             }}
             className="hover:bg-gray-50bg rounded-md bg-primary py-2.5 px-3 text-sm font-semibold leading-6 text-white hover:bg-gray-50 hover:text-gray-900"
@@ -122,9 +117,9 @@ export default function Navbar({ session }: NavbarProps) {
                   onClick={(e) => {
                     e.preventDefault();
                     if (!session) {
-                      signIn('google', { callbackUrl: '/dashboard' });
+                      signIn('google', { callbackUrl: '/documents' });
                     } else {
-                      window.location.href = '/dashboard';
+                      window.location.href = '/documents';
                     }
                   }}
                   className="-mx-3 block max-w-max rounded-md bg-primary py-2.5 px-3 text-base font-semibold leading-7 text-white hover:bg-gray-50 hover:text-gray-900"

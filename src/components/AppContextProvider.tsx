@@ -14,7 +14,7 @@ export default function AppContextProvider({
   children,
 }: {
   children: React.ReactNode;
-  }) {
+}) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [results, setResults] = useState<InputTextResult[]>([]);
   const [error, setError] = useState<string>('');
