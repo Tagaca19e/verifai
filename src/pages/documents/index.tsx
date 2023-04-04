@@ -1,5 +1,4 @@
 import Header from '@/components/documents/Header';
-import Image from 'next/image';
 import { GetServerSidePropsContext } from 'next';
 import { getSession } from 'next-auth/react';
 import { Session } from 'src/utils/types';
@@ -43,14 +42,12 @@ export default function Documents({
                 key={document._id}
                 className="group relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white"
               >
-                <div className="aspect-h-4 aspect-w-3 bg-gray-200 sm:aspect-none group-hover:opacity-75 sm:h-96">
-                  <Image
-                    src="/file-placeholder.png"
-                    className="h-full w-full object-cover object-center sm:h-full sm:w-full"
-                    alt={document.title}
-                    width={400}
-                    height={200}
-                  />
+                <div className="overflow-hidden p-2 aspect-h-4 aspect-w-3 bg-gray-50 sm:aspect-none group-hover:opacity-75 sm:h-96">
+                  <span
+                    className="text-[10px]"
+                    dangerouslySetInnerHTML={{ __html: document.content }}
+                  >
+                  </span>
                 </div>
                 <div className="flex flex-1 items-center justify-between p-4">
                   <h3 className="text-sm font-medium text-gray-900">
