@@ -10,10 +10,12 @@ import {
 
 export default function TextInput({
   session,
+  newDocumentId,
   documentTitle,
   savedDocument,
 }: {
   session: Session;
+  newDocumentId: string;
   documentTitle: string;
   savedDocument?: UserDocument;
 }) {
@@ -21,7 +23,7 @@ export default function TextInput({
     useContext<AppContextProps>(AppContext);
   const textInputRef: RefObject<HTMLDivElement> = useRef(null);
   const [userDocument, setUserDocument] = useState<UserDocument>({
-    _id: savedDocument?._id || createId(`${documentTitle}${Date.now()}`),
+    _id: savedDocument?._id || newDocumentId,
     owner: session.user.email,
     title: documentTitle,
     content: savedDocument?.content || '',

@@ -5,6 +5,7 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Session } from 'src/utils/types';
 import { signOut } from 'next-auth/react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const userNavigation = [
   { name: 'Profile', href: '#' },
@@ -125,12 +126,12 @@ export default function Header({ session }: { session: Session }) {
                     </Transition>
                   </Menu>
 
-                  <a
-                    href="#"
+                  <Link
+                    href="/documents/new"
                     className="ml-6 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary_dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   >
                     New Project
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
