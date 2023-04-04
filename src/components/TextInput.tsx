@@ -1,5 +1,4 @@
 import { AppContext } from './AppContextProvider';
-import { createId } from '@/utils/helpers';
 import { RefObject, useContext, useEffect, useRef, useState } from 'react';
 import { Session } from 'src/utils/types';
 import {
