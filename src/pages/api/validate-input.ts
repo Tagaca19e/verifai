@@ -42,7 +42,6 @@ export default async function validateInput(
     });
 
     if (inputTextResult.score.gpt > inputTextResult.score.human) {
-      // NOTE: OpenAPI returning 429 error. Commented out for now.
       try {
         const configuration = new Configuration({
           organization: process.env.OPENAI_ORG_ID,
@@ -76,12 +75,6 @@ export default async function validateInput(
           error: openAIAPIError.message,
         };
       }
-
-      // inputTextResult.details = [
-      //   'a reason',
-      //   'another reason',
-      //   'yet another reason',
-      // ];
     }
   } else {
     // TODO(etagaca): Think about how to break down long inputs.

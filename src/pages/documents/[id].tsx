@@ -1,14 +1,16 @@
+import clientPromise from 'lib/mongodb';
 import Image from 'next/image';
 import Result from 'src/components/Result';
 import TextInput from '@/components/TextInput';
-import { Menu, Transition } from '@headlessui/react';
-import { Fragment, useState, useEffect, useContext } from 'react';
+import { createId } from '@/utils/helpers';
+import { Fragment, useState } from 'react';
 import { GetServerSidePropsContext } from 'next';
 import { getSession, signOut } from 'next-auth/react';
+import { hasCookie, setCookie } from 'cookies-next';
+import { Menu, Transition } from '@headlessui/react';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import { Session } from 'src/utils/types';
 import { UserDocument } from '@/utils/interfaces';
-import { PlusIcon } from '@heroicons/react/24/outline';
-import clientPromise from 'lib/mongodb';
 
 const userNavigation = [
   { name: 'Profile', href: '/', onClick: () => {} },
@@ -21,13 +23,15 @@ function classNames(...classes: string[]) {
 
 export default function Document({
   session,
+  newDocumentId,
   savedDocument,
 }: {
   session: Session;
+  newDocumentId: string;
   savedDocument: UserDocument;
 }) {
   const [documentTitle, setDocumentTitle] = useState(
-    savedDocument.title || 'Untitled Document'
+    savedDocument?.title || 'Untitled Document'
   );
 
   return (
@@ -129,6 +133,7 @@ export default function Document({
               >
                 <TextInput
                   session={session}
+                  newDocumentId={newDocumentId}
                   documentTitle={documentTitle}
                   savedDocument={savedDocument}
                 />
@@ -155,15 +160,34 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const client = await clientPromise;
   const db = client.db('verifai');
 
+  const { req, res } = context;
+
+  // Set cookie for new document id to prevent redirect to error page.
+  if (id === 'new') {
+    let newDocumentId = createId(`${session?.user?.email}${Date.now()}`);
+    setCookie(newDocumentId, true, { req, res, maxAge: 300 });
+
+    return {
+      redirect: {
+        destination: `/documents/${newDocumentId}`,
+        permanent: false,
+      },
+    };
+  }
+
   // Ignore error from needing to use ObjectId for MongoDB find function.
   // Currently using strings for id and not ObjectId.
   // @ts-ignore
   const document = await db.collection('documents').find({ _id: id }).toArray();
-
-  if (!document[0]) {
+  if (
+    !document.length &&
+    id &&
+    typeof id === 'string' &&
+    !hasCookie(id, { req, res })
+  ) {
     return {
       redirect: {
-        destination: '/error',
+        destination: '/documents/error',
         permanent: false,
       },
     };
@@ -181,7 +205,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       session,
-      savedDocument: document[0],
+      newDocumentId: id,
+      savedDocument: document[0] || null,
     },
   };
 }

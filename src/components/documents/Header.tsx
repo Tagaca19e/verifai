@@ -5,6 +5,7 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Session } from 'src/utils/types';
 import { signOut } from 'next-auth/react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const userNavigation = [
   { name: 'Profile', href: '#' },
@@ -15,7 +16,13 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-export default function Header({ session }: { session: Session }) {
+export default function Header({
+  session,
+  filterUserDocuments,
+}: {
+  session: Session;
+  filterUserDocuments: (searchTerm: string) => void;
+}) {
   return (
     <>
       {/* When the mobile menu is open, add `overflow-hidden` to the `body` element to prevent double scrollbars */}
@@ -59,9 +66,10 @@ export default function Header({ session }: { session: Session }) {
                           />
                         </div>
                         <input
-                          id="search"
+                          autoComplete="off"
+                          onChange={(e) => filterUserDocuments(e.target.value)}
                           name="search"
-                          className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+                          className="block w-full rounded-md border-0 bg-white py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
                           placeholder="Search"
                           type="search"
                         />
@@ -125,12 +133,12 @@ export default function Header({ session }: { session: Session }) {
                     </Transition>
                   </Menu>
 
-                  <a
-                    href="#"
+                  <Link
+                    href="/documents/new"
                     className="ml-6 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary_dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   >
                     New Project
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
