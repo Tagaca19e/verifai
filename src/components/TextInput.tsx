@@ -29,13 +29,6 @@ export default function TextInput({
     results: savedDocument?.results || results,
   });
 
-  // Replace content with saved content.
-  useEffect(() => {
-    if (textInputRef.current) {
-      textInputRef.current.innerHTML = savedDocument?.content || '';
-    }
-  }, [savedDocument?.content]);
-
   // Replace results with saved results.
   useEffect(() => {
     setResults(savedDocument?.results || []);
@@ -186,6 +179,7 @@ export default function TextInput({
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             onInput={handleInput}
+            dangerouslySetInnerHTML={{ __html: savedDocument?.content || '' }}
           ></div>
         </div>
       </div>
