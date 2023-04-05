@@ -102,6 +102,7 @@ export default function TextInput({
 
   const handleSubmit = () => {
     function verifyText(sentence: string) {
+      if (!sentence) return;
       return fetch('../api/validate-input', {
         method: 'POST',
         headers: {
@@ -125,37 +126,46 @@ export default function TextInput({
 
     let texts = input ? input.split('<br>') : [];
 
-    // Remove empty strings.
-    texts = texts.filter((text) => text);
+    // Keeps track of the original texts to replace highlighted texts.
+    let replaceMentTexts = texts.slice();
+
     const verifyTextApiCalls = [
-      ...texts.map((text: string) => verifyText(text)),
+      ...texts.map((text: string) => {
+        return verifyText(text);
+      }),
     ];
 
     setIsLoading(true);
     Promise.all(verifyTextApiCalls)
       .then((results) => {
         let inputTextResults = results.map(async (result) => {
-          return await result.json();
+          return await result?.json();
         });
         return Promise.all(inputTextResults);
       })
       .then((inputTextResults: InputTextResult[]) => {
-        setResults(inputTextResults);
-        setUserDocument({ ...userDocument, results: inputTextResults });
-
+        // Highlight errors by index to avoid highlighting the same error twice.
         if (textInputRef.current) {
-          for (let inputTextResult of inputTextResults) {
+          for (let i = 0; i < inputTextResults.length; i++) {
+            if (!inputTextResults[i]) continue;
+            const inputTextResult = inputTextResults[i];
             if (inputTextResult.score.gpt > inputTextResult.score.human) {
-              textInputRef.current.innerHTML =
-                textInputRef.current.innerHTML.replace(
-                  inputTextResult.text,
-                  `<span class="border-b-2 border-red-400">${inputTextResult.text}</span>`
-                );
+              replaceMentTexts[
+                i
+              ] = `<span class="border-b-2 border-red-400">${replaceMentTexts[i]}</span>`;
             }
           }
         }
+        textInputRef.current!.innerHTML = replaceMentTexts.join('<br>');
 
-        // Update user document with the new content and results.
+        // Remove empty strings.
+        inputTextResults = inputTextResults.filter(
+          (inputTextResult) => inputTextResult
+        );
+        setResults(inputTextResults);
+        setUserDocument({ ...userDocument, results: inputTextResults });
+
+        // Update user document with new content and results.
         setUserDocument({
           ...userDocument,
           content: textInputRef.current?.innerHTML || '',
