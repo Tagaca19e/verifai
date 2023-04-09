@@ -34,6 +34,20 @@ export default function Document({
     savedDocument?.title || 'Untitled Document'
   );
 
+  const [activeResultId, setActiveResultId] = useState<string | null>(null);
+
+  /* Gets the current position of the caret to animate the results that was
+   * generated for the specific text. */
+  const getCaretIndexPosition = (resetCaretIndexPosition?: boolean) => {
+    if (resetCaretIndexPosition) {
+      setActiveResultId(null);
+      return;
+    }
+    const selection = window.getSelection();
+    const selectedElement = selection?.anchorNode?.parentElement;
+    setActiveResultId(selectedElement?.id || null);
+  };
+
   return (
     <>
       <div className="flex h-[100vh]">
@@ -136,13 +150,14 @@ export default function Document({
                   newDocumentId={newDocumentId}
                   documentTitle={documentTitle}
                   savedDocument={savedDocument}
+                  getCaretIndexPosition={getCaretIndexPosition}
                 />
               </section>
             </main>
 
             {/* Secondary column (hidden on smaller screens) */}
-            <aside className="hidden overflow-y-auto border-l border-gray-200 bg-white lg:flex lg:w-[500px] xl:w-[600px]">
-              <Result />
+            <aside className="hidden overflow-y-auto border-l border-gray-200 bg-white lg:flex lg:w-[500px] xl:w-[700px]">
+              <Result activeResultId={activeResultId} />
 
               <div className="w-64 bg-slate-400"></div>
             </aside>
@@ -159,7 +174,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const client = await clientPromise;
   const db = client.db('verifai');
-
   const { req, res } = context;
 
   // Set cookie for new document id to prevent redirect to error page.

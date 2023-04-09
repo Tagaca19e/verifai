@@ -12,14 +12,17 @@ export default function TextInput({
   newDocumentId,
   documentTitle,
   savedDocument,
+  getCaretIndexPosition,
 }: {
   session: Session;
   newDocumentId: string;
   documentTitle: string;
   savedDocument?: UserDocument;
+  getCaretIndexPosition: (resetCaretIndexPosition?: boolean) => void;
 }) {
   const { setIsLoading, results, setResults } =
     useContext<AppContextProps>(AppContext);
+
   const textInputRef: RefObject<HTMLDivElement> = useRef(null);
   const [userDocument, setUserDocument] = useState<UserDocument>({
     _id: savedDocument?._id || newDocumentId,
@@ -101,7 +104,7 @@ export default function TextInput({
   };
 
   const handleSubmit = () => {
-    function verifyText(sentence: string) {
+    function verifyText(textId: number, sentence: string) {
       if (!sentence) return;
       return fetch('../api/validate-input', {
         method: 'POST',
@@ -109,6 +112,7 @@ export default function TextInput({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          id: textId,
           data: sentence,
         }),
       });
@@ -130,8 +134,8 @@ export default function TextInput({
     let replaceMentTexts = texts.slice();
 
     const verifyTextApiCalls = [
-      ...texts.map((text: string) => {
-        return verifyText(text);
+      ...texts.map((text, idx) => {
+        return verifyText(idx, text);
       }),
     ];
 
@@ -152,8 +156,9 @@ export default function TextInput({
             if (inputTextResult.score.gpt > inputTextResult.score.human) {
               replaceMentTexts[
                 i
-              ] = `<span class="border-b-2 border-red-400">${replaceMentTexts[i]}</span>`;
+              ] = `<span id="${i}" class="border-b-2 border-red-400">${replaceMentTexts[i]}</span>`;
             }
+            inputTextResults[i].id = i.toString();
           }
         }
         textInputRef.current!.innerHTML = replaceMentTexts.join('<br>');
@@ -186,6 +191,8 @@ export default function TextInput({
             ref={textInputRef}
             className="min-h-[600px] w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none"
             contentEditable
+            onBlur={() => getCaretIndexPosition(true)}
+            onClick={() => getCaretIndexPosition()}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             onInput={handleInput}

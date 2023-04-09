@@ -3,7 +3,11 @@ import { AppContextProps } from 'src/utils/interfaces';
 import { useContext, useEffect, useState } from 'react';
 import ResultCard from './ResultCard';
 
-export default function Result() {
+export default function Result({
+  activeResultId,
+}: {
+  activeResultId: string | null;
+}) {
   const { isLoading, results, error } = useContext<AppContextProps>(AppContext);
   const [showResults, setShowResults] = useState(false);
 
@@ -18,8 +22,14 @@ export default function Result() {
   return (
     <div className="w-full">
       {showResults &&
-        results.map((inputTextResult, idx) => (
-          <div key={idx}>
+        results.map((inputTextResult) => (
+          <div
+            key={inputTextResult.id}
+            className={`${
+              activeResultId && activeResultId === inputTextResult.id
+                && 'border border-black'
+            }`}
+          >
             {!inputTextResult.error ? (
               <>
                 <ResultCard inputTextResultScore={inputTextResult.score} />

@@ -24,6 +24,7 @@ export default async function validateInput(
 
   let huggingFaceModelResult = await response.json();
   let inputTextResult: InputTextResult = {
+    id: req.body.id,
     score: {
       gpt: 0,
       human: 0,

@@ -10,6 +10,7 @@ export interface InputTextResultScore {
 }
 
 export interface InputTextResult {
+  id: string;
   score: InputTextResultScore;
   text: string;
   details: string[];
