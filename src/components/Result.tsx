@@ -1,7 +1,7 @@
+import ResultCard from './ResultCard';
 import { AppContext } from './AppContextProvider';
 import { AppContextProps } from 'src/utils/interfaces';
 import { useContext, useEffect, useState } from 'react';
-import ResultCard from './ResultCard';
 
 export default function Result({
   activeResultId,
@@ -23,22 +23,25 @@ export default function Result({
     <div className="w-full">
       {showResults &&
         results.map((inputTextResult) => (
-          <div
-            key={inputTextResult.id}
-            className={`${
-              activeResultId && activeResultId === inputTextResult.id
-                && 'border border-black'
-            }`}
-          >
+          <div key={inputTextResult.id}>
             {!inputTextResult.error ? (
               <>
                 <ResultCard inputTextResultScore={inputTextResult.score} />
-                {inputTextResult.details.map((inputTextResultDetail, idx) => (
-                  <ResultCard
-                    key={idx}
-                    inputTextResultDetail={inputTextResultDetail}
-                  />
-                ))}
+                <div
+                  className={`transition duration-200 ease-linear ${
+                    (activeResultId && activeResultId === inputTextResult.id) ||
+                    !activeResultId
+                      ? 'h-max scale-y-100 transform'
+                      : 'tranform h-0 scale-y-0'
+                  }`}
+                >
+                  {inputTextResult.details.map((inputTextResultDetail, idx) => (
+                    <ResultCard
+                      key={idx}
+                      inputTextResultDetail={inputTextResultDetail}
+                    />
+                  ))}
+                </div>
               </>
             ) : (
               <ResultCard inputTextResultError={inputTextResult.error} />

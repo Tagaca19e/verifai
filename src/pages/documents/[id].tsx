@@ -1,9 +1,17 @@
 import clientPromise from 'lib/mongodb';
 import Image from 'next/image';
 import Result from 'src/components/Result';
+import ResultMetrics from '../../components/ResultMetrics';
 import TextInput from '@/components/TextInput';
+import { AppContext } from '../../components/AppContextProvider';
+import { AppContextProps } from 'src/utils/interfaces';
 import { createId } from '@/utils/helpers';
-import { Fragment, useState } from 'react';
+import {
+  Fragment,
+  useContext,
+  useEffect,
+  useState
+  } from 'react';
 import { GetServerSidePropsContext } from 'next';
 import { getSession, signOut } from 'next-auth/react';
 import { hasCookie, setCookie } from 'cookies-next';
@@ -47,6 +55,10 @@ export default function Document({
     const selectedElement = selection?.anchorNode?.parentElement;
     setActiveResultId(selectedElement?.id || null);
   };
+
+  const { results } = useContext<AppContextProps>(AppContext);
+
+  console.log('results in the id page', results);
 
   return (
     <>
@@ -158,8 +170,7 @@ export default function Document({
             {/* Secondary column (hidden on smaller screens) */}
             <aside className="hidden overflow-y-auto border-l border-gray-200 bg-white lg:flex lg:w-[500px] xl:w-[700px]">
               <Result activeResultId={activeResultId} />
-
-              <div className="w-64 bg-slate-400"></div>
+              <ResultMetrics />
             </aside>
           </div>
         </div>

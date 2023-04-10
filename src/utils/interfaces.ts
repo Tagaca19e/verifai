@@ -9,11 +9,20 @@ export interface InputTextResultScore {
   human: number;
 }
 
+export interface Metrics {
+  coherence?: number;
+  repetition?: number;
+  personalStyle?: number;
+  originality?: number;
+}
+
 export interface InputTextResult {
   id: string;
   score: InputTextResultScore;
+  metrics: Metrics;
   text: string;
   details: string[];
+  message?: string; // N.B. Not sure if this is needed.
   error?: string;
 }
 
