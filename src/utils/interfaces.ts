@@ -9,10 +9,21 @@ export interface InputTextResultScore {
   human: number;
 }
 
+export interface Metrics {
+  coherence?: number;
+  repetition?: number;
+  personality?: number;
+  originality?: number;
+  [key: string]: number | undefined;
+}
+
 export interface InputTextResult {
+  id: string;
   score: InputTextResultScore;
+  metrics: Metrics;
   text: string;
   details: string[];
+  message?: string; // N.B. Not sure if this is needed.
   error?: string;
 }
 
@@ -30,5 +41,10 @@ export interface UserDocument {
   owner: string;
   title: string;
   content: string;
+  rating: {
+    gpt: number;
+    human: number;
+    metrics: Metrics;
+  }
   results: InputTextResult[];
 }

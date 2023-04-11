@@ -1,9 +1,17 @@
 import clientPromise from 'lib/mongodb';
 import Image from 'next/image';
 import Result from 'src/components/Result';
+import ResultMetrics from '../../components/ResultMetrics';
 import TextInput from '@/components/TextInput';
+import { AppContext } from '../../components/AppContextProvider';
+import { AppContextProps } from 'src/utils/interfaces';
 import { createId } from '@/utils/helpers';
-import { Fragment, useState } from 'react';
+import {
+  Fragment,
+  useContext,
+  useEffect,
+  useState
+  } from 'react';
 import { GetServerSidePropsContext } from 'next';
 import { getSession, signOut } from 'next-auth/react';
 import { hasCookie, setCookie } from 'cookies-next';
@@ -33,6 +41,70 @@ export default function Document({
   const [documentTitle, setDocumentTitle] = useState(
     savedDocument?.title || 'Untitled Document'
   );
+
+  const [activeResultId, setActiveResultId] = useState<string | null>(null);
+
+  /* Gets the current position of the caret to animate the results that was
+   * generated for the specific text. */
+  const getCaretIndexPosition = (resetCaretIndexPosition?: boolean) => {
+    if (resetCaretIndexPosition) {
+      setActiveResultId(null);
+      return;
+    }
+    const selection = window.getSelection();
+    const selectedElement = selection?.anchorNode?.parentElement;
+    setActiveResultId(selectedElement?.id || null);
+  };
+
+  const updateUserDocument = async (document: UserDocument) => {
+    setUserDocument(document);
+  };
+
+  const { results, setResults } = useContext<AppContextProps>(AppContext);
+  const [userDocument, setUserDocument] = useState<UserDocument>({
+    _id: savedDocument?._id || newDocumentId,
+    owner: session.user.email,
+    title: documentTitle,
+    content: savedDocument?.content || '',
+    rating: {
+      gpt: savedDocument?.rating?.gpt || 0,
+      human: savedDocument?.rating?.human || 0,
+      metrics: savedDocument?.rating?.metrics || {},
+    },
+    // overallMetrics: savedDocument?.overallMetrics || {},
+    results: savedDocument?.results || results,
+  });
+
+  // Replace document title with saved title.
+  useEffect(() => {
+    setUserDocument((prevUserDocument) => ({
+      ...prevUserDocument,
+      title: documentTitle,
+    }));
+  }, [documentTitle]);
+
+  // Keep state for results in sync with saved results.
+  useEffect(() => {
+    setResults(savedDocument?.results || []);
+  }, [savedDocument?.results, setResults]);
+
+  // Save any changes made to the document in the database.
+  useEffect(() => {
+    const saveUserDocument = async () => {
+      try {
+        await fetch('../api/save-document', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userDocument),
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    saveUserDocument();
+  }, [userDocument]);
 
   return (
     <>
@@ -132,19 +204,18 @@ export default function Document({
                 className="flex h-full min-w-0 flex-1 flex-col lg:order-last"
               >
                 <TextInput
-                  session={session}
-                  newDocumentId={newDocumentId}
-                  documentTitle={documentTitle}
                   savedDocument={savedDocument}
+                  userDocument={userDocument}
+                  getCaretIndexPosition={getCaretIndexPosition}
+                  updateUserDocument={updateUserDocument}
                 />
               </section>
             </main>
 
             {/* Secondary column (hidden on smaller screens) */}
-            <aside className="hidden overflow-y-auto border-l border-gray-200 bg-white lg:flex lg:w-[500px] xl:w-[600px]">
-              <Result />
-
-              <div className="w-64 bg-slate-400"></div>
+            <aside className="hidden overflow-y-auto border-l border-gray-200 bg-white lg:flex lg:w-[500px] xl:w-[700px]">
+              <Result activeResultId={activeResultId} />
+              <ResultMetrics userDocument={userDocument} />
             </aside>
           </div>
         </div>
@@ -159,7 +230,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const client = await clientPromise;
   const db = client.db('verifai');
-
   const { req, res } = context;
 
   // Set cookie for new document id to prevent redirect to error page.

@@ -1,6 +1,5 @@
 import { AppContext } from './AppContextProvider';
-import { RefObject, useContext, useEffect, useRef, useState } from 'react';
-import { Session } from 'src/utils/types';
+import { RefObject, useContext, useRef } from 'react';
 import {
   AppContextProps,
   InputTextResult,
@@ -8,51 +7,18 @@ import {
 } from 'src/utils/interfaces';
 
 export default function TextInput({
-  session,
-  newDocumentId,
-  documentTitle,
   savedDocument,
+  userDocument,
+  getCaretIndexPosition,
+  updateUserDocument,
 }: {
-  session: Session;
-  newDocumentId: string;
-  documentTitle: string;
   savedDocument?: UserDocument;
+  userDocument: UserDocument;
+  getCaretIndexPosition: (resetCaretIndexPosition?: boolean) => void;
+  updateUserDocument: (document: UserDocument) => void;
 }) {
-  const { setIsLoading, results, setResults } =
-    useContext<AppContextProps>(AppContext);
+  const { setIsLoading, setResults } = useContext<AppContextProps>(AppContext);
   const textInputRef: RefObject<HTMLDivElement> = useRef(null);
-  const [userDocument, setUserDocument] = useState<UserDocument>({
-    _id: savedDocument?._id || newDocumentId,
-    owner: session.user.email,
-    title: documentTitle,
-    content: savedDocument?.content || '',
-    results: savedDocument?.results || results,
-  });
-
-  // Replace results with saved results.
-  useEffect(() => {
-    setResults(savedDocument?.results || []);
-  }, [savedDocument?.results, setResults]);
-
-  useEffect(() => {
-    setUserDocument((prevUserDocument) => ({
-      ...prevUserDocument,
-      title: documentTitle,
-    }));
-  }, [documentTitle]);
-
-  useEffect(() => {
-    const saveUserDocument = async () => {
-      await fetch('../api/save-document', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userDocument),
-      });
-    };
-    saveUserDocument();
-  }, [userDocument]);
 
   /* Removes all html content from the clipboard. */
   const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
@@ -65,7 +31,8 @@ export default function TextInput({
     if (textInputRef.current) {
       textInputRef.current.innerHTML += text;
     }
-    setUserDocument({
+
+    updateUserDocument({
       ...userDocument,
       content: textInputRef.current?.innerHTML || '',
     });
@@ -94,14 +61,14 @@ export default function TextInput({
         paragraphElement?.classList.remove('border-b-2');
       }
     }
-    setUserDocument({
+    updateUserDocument({
       ...userDocument,
       content: textInputRef.current?.innerHTML || '',
     });
   };
 
   const handleSubmit = () => {
-    function verifyText(sentence: string) {
+    function verifyText(textId: number, sentence: string) {
       if (!sentence) return;
       return fetch('../api/validate-input', {
         method: 'POST',
@@ -109,6 +76,7 @@ export default function TextInput({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          id: textId,
           data: sentence,
         }),
       });
@@ -130,8 +98,8 @@ export default function TextInput({
     let replaceMentTexts = texts.slice();
 
     const verifyTextApiCalls = [
-      ...texts.map((text: string) => {
-        return verifyText(text);
+      ...texts.map((text, idx) => {
+        return verifyText(idx, text);
       }),
     ];
 
@@ -152,8 +120,9 @@ export default function TextInput({
             if (inputTextResult.score.gpt > inputTextResult.score.human) {
               replaceMentTexts[
                 i
-              ] = `<span class="border-b-2 border-red-400">${replaceMentTexts[i]}</span>`;
+              ] = `<span id="${i}" class="border-b-2 border-red-400">${replaceMentTexts[i]}</span>`;
             }
+            inputTextResults[i].id = i.toString();
           }
         }
         textInputRef.current!.innerHTML = replaceMentTexts.join('<br>');
@@ -162,15 +131,52 @@ export default function TextInput({
         inputTextResults = inputTextResults.filter(
           (inputTextResult) => inputTextResult
         );
-        setResults(inputTextResults);
-        setUserDocument({ ...userDocument, results: inputTextResults });
 
-        // Update user document with new content and results.
-        setUserDocument({
+        setResults(inputTextResults);
+
+        let overallGptScore = 0;
+        let overallHumanScore = 0;
+        let overallMetrics = {
+          coherence: 0,
+          repetition: 0,
+          personality: 0,
+          originality: 0,
+          errorTextCount: 0,
+        };
+
+        inputTextResults.forEach((result) => {
+          if (Object.keys(result.metrics).length) {
+            overallGptScore += result.score.gpt || 0;
+            overallHumanScore += result.score.human || 0;
+            overallMetrics.coherence += result.metrics.coherence || 0;
+            overallMetrics.repetition += result.metrics.repetition || 0;
+            overallMetrics.personality += result.metrics.personality || 0;
+            overallMetrics.originality += result.metrics.originality || 0;
+            overallMetrics.errorTextCount += 1;
+          }
+        });
+
+        overallMetrics.coherence =
+          (overallMetrics.coherence / overallMetrics.errorTextCount) * 10;
+        overallMetrics.repetition =
+          (overallMetrics.repetition / overallMetrics.errorTextCount) * 10;
+        overallMetrics.personality =
+          (overallMetrics.personality / overallMetrics.errorTextCount) * 10;
+        overallMetrics.originality =
+          (overallMetrics.originality / overallMetrics.errorTextCount) * 10;
+
+        // Update user document with new content, rating, and results.
+        updateUserDocument({
           ...userDocument,
           content: textInputRef.current?.innerHTML || '',
+          rating: {
+            gpt: (overallGptScore / inputTextResults.length) * 100,
+            human: (overallHumanScore / inputTextResults.length) * 100,
+            metrics: overallMetrics,
+          },
           results: inputTextResults,
         });
+
         setIsLoading(false);
       })
       .catch((error) => {
@@ -186,6 +192,8 @@ export default function TextInput({
             ref={textInputRef}
             className="min-h-[600px] w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none"
             contentEditable
+            onBlur={() => getCaretIndexPosition(true)}
+            onClick={() => getCaretIndexPosition()}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             onInput={handleInput}
