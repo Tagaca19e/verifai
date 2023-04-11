@@ -35,6 +35,7 @@ export default async function saveDocument(
           $set: {
             title: req.body.title,
             content: req.body.content,
+            rating: req.body.rating,
             results: req.body.results,
           },
         }

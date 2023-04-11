@@ -56,9 +56,55 @@ export default function Document({
     setActiveResultId(selectedElement?.id || null);
   };
 
-  const { results } = useContext<AppContextProps>(AppContext);
+  const updateUserDocument = async (document: UserDocument) => {
+    setUserDocument(document);
+  };
 
-  console.log('results in the id page', results);
+  const { results, setResults } = useContext<AppContextProps>(AppContext);
+  const [userDocument, setUserDocument] = useState<UserDocument>({
+    _id: savedDocument?._id || newDocumentId,
+    owner: session.user.email,
+    title: documentTitle,
+    content: savedDocument?.content || '',
+    rating: {
+      gpt: savedDocument?.rating?.gpt || 0,
+      human: savedDocument?.rating?.human || 0,
+      metrics: savedDocument?.rating?.metrics || {},
+    },
+    // overallMetrics: savedDocument?.overallMetrics || {},
+    results: savedDocument?.results || results,
+  });
+
+  // Replace document title with saved title.
+  useEffect(() => {
+    setUserDocument((prevUserDocument) => ({
+      ...prevUserDocument,
+      title: documentTitle,
+    }));
+  }, [documentTitle]);
+
+  // Keep state for results in sync with saved results.
+  useEffect(() => {
+    setResults(savedDocument?.results || []);
+  }, [savedDocument?.results, setResults]);
+
+  // Save any changes made to the document in the database.
+  useEffect(() => {
+    const saveUserDocument = async () => {
+      try {
+        await fetch('../api/save-document', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userDocument),
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    saveUserDocument();
+  }, [userDocument]);
 
   return (
     <>
@@ -158,11 +204,10 @@ export default function Document({
                 className="flex h-full min-w-0 flex-1 flex-col lg:order-last"
               >
                 <TextInput
-                  session={session}
-                  newDocumentId={newDocumentId}
-                  documentTitle={documentTitle}
                   savedDocument={savedDocument}
+                  userDocument={userDocument}
                   getCaretIndexPosition={getCaretIndexPosition}
+                  updateUserDocument={updateUserDocument}
                 />
               </section>
             </main>
@@ -170,7 +215,7 @@ export default function Document({
             {/* Secondary column (hidden on smaller screens) */}
             <aside className="hidden overflow-y-auto border-l border-gray-200 bg-white lg:flex lg:w-[500px] xl:w-[700px]">
               <Result activeResultId={activeResultId} />
-              <ResultMetrics />
+              <ResultMetrics userDocument={userDocument} />
             </aside>
           </div>
         </div>

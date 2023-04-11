@@ -28,16 +28,16 @@ export default function Result({
               <>
                 <ResultCard inputTextResultScore={inputTextResult.score} />
                 <div
-                  className={`transition duration-200 ease-linear ${
+                  className={`transition duration-300 ease-linear ${
                     (activeResultId && activeResultId === inputTextResult.id) ||
                     !activeResultId
                       ? 'h-max scale-y-100 transform'
-                      : 'tranform h-0 scale-y-0'
+                      : 'h-0 scale-y-0 transform'
                   }`}
                 >
-                  {inputTextResult.details.map((inputTextResultDetail, idx) => (
+                  {inputTextResult.details.map((inputTextResultDetail) => (
                     <ResultCard
-                      key={idx}
+                      key={inputTextResultDetail}
                       inputTextResultDetail={inputTextResultDetail}
                     />
                   ))}
