@@ -30,7 +30,7 @@ export default function TextMetrics({
                   metric !== 'errorTextCount' && (
                     <li key={metric} className="mb-3">
                       <h1 className="capitalize">{metric}</h1>
-                      <p> {metrics[metric]} </p>
+                      <p> {metrics[metric]?.toFixed(2)} </p>
                     </li>
                   )
                 );
