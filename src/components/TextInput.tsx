@@ -190,7 +190,7 @@ export default function TextInput({
         <div className="-m-0.5 rounded-lg p-0.5">
           <div
             ref={textInputRef}
-            className="min-h-[600px] w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none"
+            className="min-h-[600px] rounded-md border-0 p-3 text-lg text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none"
             contentEditable
             onBlur={() => getCaretIndexPosition(true)}
             onClick={() => getCaretIndexPosition()}

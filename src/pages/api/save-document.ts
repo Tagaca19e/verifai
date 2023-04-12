@@ -5,7 +5,7 @@ export default async function saveDocument(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.body.title === 'Untitled Document' && req.body.content === '') {
+  if (req.body.title === 'Untitled document' && req.body.content === '') {
     res.status(200).json({ message: 'empty documents not saved' });
     return;
   }
@@ -42,7 +42,9 @@ export default async function saveDocument(
       );
 
       if (result.acknowledged) {
-        res.status(200).json({ message: 'updated successfully!', id: req.body['_id'] });
+        res
+          .status(200)
+          .json({ message: 'updated successfully!', id: req.body['_id'] });
       } else {
         res.status(400).json({ error: 'something went wrong with update!' });
       }

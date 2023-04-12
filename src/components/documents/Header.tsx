@@ -31,7 +31,7 @@ export default function Header({
         className={({ open }) =>
           classNames(
             open ? 'fixed inset-0 z-40 overflow-y-auto' : '',
-            'bg-white shadow-sm lg:static lg:overflow-y-visible'
+            'border border-gray-200 bg-white shadow-sm lg:static lg:overflow-y-visible'
           )
         }
       >
@@ -41,15 +41,15 @@ export default function Header({
               <div className="relative flex justify-between lg:gap-8 xl:grid xl:grid-cols-12">
                 <div className="flex md:absolute md:inset-y-0 md:left-0 lg:static xl:col-span-2">
                   <div className="flex flex-shrink-0 items-center">
-                    <a href="#">
+                    <Link href="/">
                       <Image
                         className="block h-12 w-auto"
                         src="/logos/verifai.svg"
                         width={40}
                         height={40}
-                        alt="Your Company"
+                        alt="Verifai"
                       />
-                    </a>
+                    </Link>
                   </div>
                 </div>
                 <div className="min-w-0 flex-1 md:px-8 lg:px-0 xl:col-span-6">
@@ -137,7 +137,7 @@ export default function Header({
                     href="/documents/new"
                     className="ml-6 inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary_dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                   >
-                    New Project
+                    New
                   </Link>
                 </div>
               </div>

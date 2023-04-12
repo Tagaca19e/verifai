@@ -1,4 +1,5 @@
 import Header from '@/components/documents/Header';
+import Link from 'next/link';
 import { GetServerSidePropsContext } from 'next';
 import { getSession } from 'next-auth/react';
 import { Session } from 'src/utils/types';
@@ -37,7 +38,7 @@ export default function Documents({
     });
 
     setCurrentUserDocuments(filteredDocuments);
-  }
+  };
 
   return (
     <>
@@ -58,10 +59,10 @@ export default function Documents({
                 </div>
                 <div className="flex flex-1 items-center justify-between p-4">
                   <h3 className="text-sm font-medium text-gray-900">
-                    <a href={`../documents/${document._id}`}>
+                    <Link href={`../documents/${document._id}`}>
                       <span aria-hidden="true" className="absolute inset-0" />
                       {document.title}
-                    </a>
+                    </Link>
                   </h3>
                   <a
                     className="relative z-20 cursor-pointer rounded-full p-2 hover:bg-gray-200"

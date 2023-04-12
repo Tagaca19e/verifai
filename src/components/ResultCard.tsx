@@ -15,18 +15,18 @@ export default function ResultCard({
 }) {
   return (
     <div
-      className={`m-3 rounded-md border border-gray-200 ${
+      className={`m-3 rounded-md border border-gray-200 px-2 py-4  shadow-md hover:bg-gray-100 ${
         (inputTextResultScore &&
           inputTextResultScore.gpt > inputTextResultScore.human) ||
         inputTextResultDetail ||
         inputTextResultError
-          ? 'bg-error_light'
+          ? 'bg-white'
           : 'bg-success_light'
-      } p-4`}
+      }`}
     >
       <div className="flex">
         {!inputTextResultDetail && (
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 px-2">
             {(inputTextResultScore &&
               inputTextResultScore.gpt > inputTextResultScore.human) ||
             inputTextResultError ? (
@@ -58,7 +58,17 @@ export default function ResultCard({
               </div>
             </>
           ) : (
-            <p>{inputTextResultDetail || inputTextResultError}</p>
+            <span className="flex items-center">
+              {' '}
+              <svg
+                className="-ml-0.5 mr-3 h-2 w-2 text-error_dark"
+                fill="currentColor"
+                viewBox="0 0 8 8"
+              >
+                <circle cx={4} cy={4} r={3} />
+              </svg>
+              {inputTextResultDetail || inputTextResultError}
+            </span>
           )}
         </div>
       </div>
