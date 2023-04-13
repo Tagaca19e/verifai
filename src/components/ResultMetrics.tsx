@@ -11,7 +11,7 @@ export default function TextMetrics({
   const metrics = userDocument.rating.metrics;
 
   return (
-    <div className="sticky top-0 w-64 border-l border-gray-200">
+    <div className="sticky top-0 ml-1 flex-grow border-l border-gray-200 shadow-md">
       {isLoading ? (
         <p>Loading...</p>
       ) : (
@@ -30,7 +30,7 @@ export default function TextMetrics({
                   metric !== 'errorTextCount' && (
                     <li key={metric} className="mb-3">
                       <h1 className="capitalize">{metric}</h1>
-                      <p> {metrics[metric]} </p>
+                      <p> {metrics[metric]?.toFixed(2)} </p>
                     </li>
                   )
                 );

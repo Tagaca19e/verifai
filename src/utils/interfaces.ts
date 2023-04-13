@@ -45,6 +45,18 @@ export interface UserDocument {
     gpt: number;
     human: number;
     metrics: Metrics;
-  }
+  };
+  results: InputTextResult[];
+}
+
+export interface DocumentTemplate {
+  _id: string;
+  title: string;
+  content: string;
+  rating: {
+    gpt: number;
+    human: number;
+    metrics: Metrics;
+  };
   results: InputTextResult[];
 }

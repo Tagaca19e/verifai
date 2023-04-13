@@ -1,12 +1,11 @@
 import Head from 'next/head';
+import Hero from '../components/Hero';
 import Layout from '../components/Layout';
-import Login from '../components/Login';
 import { GetServerSideProps } from 'next';
 import { getSession, GetSessionParams } from 'next-auth/react';
 import { Session } from 'src/utils/types';
 
 export default function Home({ session }: { session: Session }) {
-
   return (
     <>
       <Head>
@@ -17,7 +16,7 @@ export default function Home({ session }: { session: Session }) {
       </Head>
       <>
         <Layout session={session}>
-          <Login session={session} />
+          <Hero />
         </Layout>
       </>
     </>

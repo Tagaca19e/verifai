@@ -144,8 +144,10 @@ export default function TextInput({
           errorTextCount: 0,
         };
 
+        // TODO(etagaca): Sometimes the metrics do not show up even though the
+        // text is highlighted as AI generated.
         inputTextResults.forEach((result) => {
-          if (Object.keys(result.metrics).length) {
+          if (result.details.length) {
             overallGptScore += result.score.gpt || 0;
             overallHumanScore += result.score.human || 0;
             overallMetrics.coherence += result.metrics.coherence || 0;
@@ -190,7 +192,7 @@ export default function TextInput({
         <div className="-m-0.5 rounded-lg p-0.5">
           <div
             ref={textInputRef}
-            className="min-h-[600px] w-full rounded-md border-0 p-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none"
+            className="min-h-[600px] rounded-md border-0 p-3 text-lg text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none"
             contentEditable
             onBlur={() => getCaretIndexPosition(true)}
             onClick={() => getCaretIndexPosition()}

@@ -10,7 +10,7 @@ interface LayoutProps {
 
 export default function Layout({ session, children }: LayoutProps) {
   return (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto flex h-[100vh] max-w-[1400px] flex-col justify-between">
       <Navbar session={session} />
       <main>{children}</main>
       <Footer />

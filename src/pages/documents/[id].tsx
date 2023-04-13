@@ -1,24 +1,19 @@
 import clientPromise from 'lib/mongodb';
 import Image from 'next/image';
+import Link from 'next/link';
 import Result from 'src/components/Result';
 import ResultMetrics from '../../components/ResultMetrics';
 import TextInput from '@/components/TextInput';
 import { AppContext } from '../../components/AppContextProvider';
 import { AppContextProps } from 'src/utils/interfaces';
 import { createId } from '@/utils/helpers';
-import {
-  Fragment,
-  useContext,
-  useEffect,
-  useState
-  } from 'react';
+import { Fragment, useContext, useEffect, useState } from 'react';
 import { GetServerSidePropsContext } from 'next';
 import { getSession, signOut } from 'next-auth/react';
 import { hasCookie, setCookie } from 'cookies-next';
 import { Menu, Transition } from '@headlessui/react';
-import { PlusIcon } from '@heroicons/react/24/outline';
 import { Session } from 'src/utils/types';
-import { UserDocument } from '@/utils/interfaces';
+import { UserDocument, DocumentTemplate } from '@/utils/interfaces';
 
 const userNavigation = [
   { name: 'Profile', href: '/', onClick: () => {} },
@@ -39,7 +34,7 @@ export default function Document({
   savedDocument: UserDocument;
 }) {
   const [documentTitle, setDocumentTitle] = useState(
-    savedDocument?.title || 'Untitled Document'
+    savedDocument?.title || 'Untitled document'
   );
 
   const [activeResultId, setActiveResultId] = useState<string | null>(null);
@@ -71,8 +66,7 @@ export default function Document({
       human: savedDocument?.rating?.human || 0,
       metrics: savedDocument?.rating?.metrics || {},
     },
-    // overallMetrics: savedDocument?.overallMetrics || {},
-    results: savedDocument?.results || results,
+    results: savedDocument?.results || [],
   });
 
   // Replace document title with saved title.
@@ -114,8 +108,8 @@ export default function Document({
           <header className="w-full">
             <div className="relative z-10 flex h-16 flex-shrink-0 border-b border-gray-200 bg-white shadow-sm">
               {/* Home button */}
-              <a
-                href="../documents"
+              <Link
+                href="/documents"
                 className="m-auto border-r border-gray-200 px-4"
               >
                 <Image
@@ -124,7 +118,7 @@ export default function Document({
                   width={40}
                   height={40}
                 />
-              </a>
+              </Link>
               <div className="flex flex-1 justify-between px-4 sm:px-6">
                 <div className="flex flex-1">
                   <div className="my-auto">
@@ -182,26 +176,18 @@ export default function Document({
                       </Menu.Items>
                     </Transition>
                   </Menu>
-
-                  <button
-                    type="button"
-                    className="flex items-center justify-center rounded-full bg-primary p-1 text-white hover:bg-primary_dark focus:outline-none focus:ring-2 focus:ring-primary_dark focus:ring-offset-2"
-                  >
-                    <PlusIcon className="h-6 w-6" aria-hidden="true" />
-                    <span className="sr-only">Add file</span>
-                  </button>
                 </div>
               </div>
             </div>
           </header>
 
           {/* Main content */}
-          <div className="flex flex-1 items-stretch overflow-hidden">
+          <div className="m-auto flex max-w-[2000px] flex-1 items-stretch overflow-hidden">
             <main className="flex-1 overflow-y-auto">
               {/* Primary column */}
               <section
                 aria-labelledby="primary-heading"
-                className="flex h-full min-w-0 flex-1 flex-col lg:order-last"
+                className="flex h-full w-[800px] min-w-0 flex-1 flex-col lg:order-last"
               >
                 <TextInput
                   savedDocument={savedDocument}
@@ -213,7 +199,7 @@ export default function Document({
             </main>
 
             {/* Secondary column (hidden on smaller screens) */}
-            <aside className="hidden overflow-y-auto border-l border-gray-200 bg-white lg:flex lg:w-[500px] xl:w-[700px]">
+            <aside className="hidden w-fit overflow-y-scroll border-l border-gray-200 bg-white lg:flex lg:w-[500px] xl:w-[700px]">
               <Result activeResultId={activeResultId} />
               <ResultMetrics userDocument={userDocument} />
             </aside>
@@ -226,16 +212,45 @@ export default function Document({
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getSession(context);
-  const { id } = context.query;
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
 
   const client = await clientPromise;
   const db = client.db('verifai');
   const { req, res } = context;
+  const { id } = context.query;
 
-  // Set cookie for new document id to prevent redirect to error page.
-  if (id === 'new') {
-    let newDocumentId = createId(`${session?.user?.email}${Date.now()}`);
-    setCookie(newDocumentId, true, { req, res, maxAge: 300 });
+  // Set cookie for new document id to prevent redirect to error page or
+  // create new document from a document template.
+  if (id === 'new' || id === 'harry' || id === 'quantum') {
+    const newDocumentId = createId(`${session?.user?.email}${Date.now()}`);
+
+    switch (id) {
+      case 'new':
+        setCookie(newDocumentId, true, { req, res, maxAge: 300 });
+        break;
+
+      case 'harry':
+      case 'quantum':
+        const harryDocument = await db
+          .collection('document_templates')
+          // @ts-ignore
+          .findOne({ _id: id }, { projection: { _id: 0 } });
+        await db.collection('documents').insertOne({
+          // @ts-ignore
+          _id: newDocumentId,
+          owner: session?.user?.email,
+          ...harryDocument,
+        });
+        break;
+    }
 
     return {
       redirect: {
@@ -258,15 +273,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return {
       redirect: {
         destination: '/documents/error',
-        permanent: false,
-      },
-    };
-  }
-
-  if (!session) {
-    return {
-      redirect: {
-        destination: '/',
         permanent: false,
       },
     };

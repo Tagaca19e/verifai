@@ -1,6 +1,9 @@
+import clientPromise from 'lib/mongodb';
 import Header from '@/components/documents/Header';
+import Link from 'next/link';
 import { GetServerSidePropsContext } from 'next';
 import { getSession } from 'next-auth/react';
+import { PlusIcon } from '@heroicons/react/20/solid';
 import { Session } from 'src/utils/types';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { UserDocument } from 'src/utils/interfaces';
@@ -9,9 +12,11 @@ import { useState } from 'react';
 export default function Documents({
   session,
   userDocuments,
+  documentTemplates,
 }: {
   session: Session;
   userDocuments: UserDocument[];
+  documentTemplates: UserDocument[];
 }) {
   const [currentUserDocuments, setCurrentUserDocuments] =
     useState<UserDocument[]>(userDocuments);
@@ -24,6 +29,7 @@ export default function Documents({
       },
       body: JSON.stringify({
         documentId: documentId,
+        email: session.user.email,
       }),
     });
 
@@ -37,13 +43,36 @@ export default function Documents({
     });
 
     setCurrentUserDocuments(filteredDocuments);
-  }
+  };
 
   return (
     <>
       <Header filterUserDocuments={filterUserDocuments} session={session} />
       <div className="bg-white">
-        <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
+          <div className="my-8 flex gap-8">
+            <Link href="/documents/new">
+              <span className="flex h-[250px] w-[175px] cursor-pointer items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50">
+                <PlusIcon className="h-11 w-11 text-gray-800" />
+              </span>
+            </Link>
+
+            {documentTemplates.map((document) => (
+              <div key={document._id}>
+                <Link href={`../documents/${document._id}`}>
+                  <div className="flex h-[250px]  w-[175px] cursor-pointer flex-col justify-between rounded-md border border-gray-200 bg-gray-50 hover:opacity-75">
+                    <div
+                      className="h-[200px] items-center justify-center overflow-hidden p-2 text-[6px]"
+                      dangerouslySetInnerHTML={{ __html: document.content }}
+                    ></div>
+                    <div className="w-full rounded-b-md bg-white p-2 text-sm">
+                      {document.title}
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            ))}
+          </div>
           <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-8">
             {currentUserDocuments.map((document) => (
               <div
@@ -58,10 +87,10 @@ export default function Documents({
                 </div>
                 <div className="flex flex-1 items-center justify-between p-4">
                   <h3 className="text-sm font-medium text-gray-900">
-                    <a href={`../documents/${document._id}`}>
+                    <Link href={`../documents/${document._id}`}>
                       <span aria-hidden="true" className="absolute inset-0" />
                       {document.title}
-                    </a>
+                    </Link>
                   </h3>
                   <a
                     className="relative z-20 cursor-pointer rounded-full p-2 hover:bg-gray-200"
@@ -105,11 +134,19 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   );
 
+  const client = await clientPromise;
+  const db = client.db('verifai');
+  const documentTemplates = await db
+    .collection('document_templates')
+    .find()
+    .toArray();
+
   const data = await response.json();
   return {
     props: {
       session,
       userDocuments: data.documents,
+      documentTemplates,
     },
   };
 }
