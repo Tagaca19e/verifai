@@ -25,7 +25,7 @@ export default function Hero() {
                   <a
                     href="https://github.com/Tagaca19e/verifai"
                     target="blank"
-                    className="rounded-full border border-gray-500 px-3 py-1 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
+                    className="rounded-md border border-gray-500 px-3 py-1 text-sm font-semibold leading-6 text-gray-900 transition-all duration-200 hover:rounded-[100px] "
                   >
                     View on GitHub <span aria-hidden="true">→</span>
                   </a>
@@ -37,8 +37,9 @@ export default function Hero() {
             <div className="rouded-xl relative h-[500px] px-6 pt-8 sm:pt-16 md:pl-16 md:pr-0">
               <Image
                 className="rounded-3xl border border-gray-300 object-cover object-left shadow-lg"
-                src="/hero.svg"
+                src="/hero.jpg"
                 alt="Document example"
+                priority={true}
                 fill
               />
             </div>
