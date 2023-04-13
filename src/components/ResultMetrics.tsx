@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import ResultMetricsLoader from './loaders/ResultMetricsLoader';
 import { AppContext } from './AppContextProvider';
 import { AppContextProps, UserDocument } from 'src/utils/interfaces';
 
@@ -13,7 +14,7 @@ export default function TextMetrics({
   return (
     <div className="sticky top-0 ml-1 flex-grow border-l border-gray-200 shadow-md">
       {isLoading ? (
-        <p>Loading...</p>
+        <ResultMetricsLoader />
       ) : (
         <>
           <div className="m-3 rounded-md border border-gray-300 p-3">

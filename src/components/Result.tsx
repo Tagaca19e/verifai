@@ -1,8 +1,9 @@
+import Image from 'next/image';
 import ResultCard from './ResultCard';
+import ResultCardLoader from './loaders/ResultCardLoader';
 import { AppContext } from './AppContextProvider';
 import { AppContextProps, InputTextResult } from 'src/utils/interfaces';
 import { useContext, useEffect, useState } from 'react';
-import Image from 'next/image';
 
 export default function Result({
   activeResultId,
@@ -21,7 +22,7 @@ export default function Result({
   }, [isLoading, results, error, showResults]);
 
   return (
-    <div className="w-[500px]">
+    <div className="h-max sm:w-[500px]">
       {showResults &&
         results.map((inputTextResult) => (
           <div key={inputTextResult.id}>
@@ -49,7 +50,12 @@ export default function Result({
             )}
           </div>
         ))}
-      {isLoading && <p>Loading...</p>}
+      {isLoading && (
+        <>
+          <ResultCardLoader />
+          <ResultCardLoader />
+        </>
+      )}
       {!isLoading && results.length === 0 && !error && (
         <div className="flex flex-col items-center justify-center">
           <Image

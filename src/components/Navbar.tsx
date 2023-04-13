@@ -16,7 +16,7 @@ export default function Navbar({ session }: { session: Session }) {
         aria-label="Global"
       >
         <div className="flex lg:flex-1">
-          <a href="#" className="-m-1.5 p-1.5">
+          <Link href="/" className="-m-1.5 p-1.5">
             <span className="sr-only">Verfai</span>
             <Image
               src="/logos/verifai.svg"
@@ -24,7 +24,7 @@ export default function Navbar({ session }: { session: Session }) {
               width={50}
               height={50}
             />
-          </a>
+          </Link>
         </div>
         <div className="flex lg:hidden">
           <button
@@ -38,8 +38,7 @@ export default function Navbar({ session }: { session: Session }) {
         </div>
 
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-          <a
-            href="#"
+          <button
             onClick={(e) => {
               e.preventDefault();
               if (!session) {
@@ -48,11 +47,11 @@ export default function Navbar({ session }: { session: Session }) {
                 window.location.href = '/documents';
               }
             }}
-            className="hover:bg-gray-50bg rounded-md bg-primary py-2.5 px-3 text-sm font-semibold leading-6 text-white hover:bg-gray-50 hover:text-gray-900"
+            className="rounded-md border border-gray-500 py-2.5 px-3 text-sm font-semibold text-gray-900 transition-all duration-200 hover:rounded-[100px]"
           >
             {session ? 'Dashboard' : 'Login'}{' '}
             <span aria-hidden="true">&rarr;</span>
-          </a>
+          </button>
         </div>
       </nav>
       <Dialog
@@ -64,7 +63,7 @@ export default function Navbar({ session }: { session: Session }) {
         <div className="fixed inset-0 z-10" />
         <Dialog.Panel className="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div className="flex items-center justify-between">
-            <a href="#" className="-m-1.5 p-1.5">
+            <Link href="/" className="-m-1.5 p-1.5">
               <span className="sr-only">Verifai</span>
               <Image
                 src="/logos/verifai.svg"
@@ -72,7 +71,7 @@ export default function Navbar({ session }: { session: Session }) {
                 width={50}
                 height={50}
               />
-            </a>
+            </Link>
             <button
               type="button"
               className="-m-2.5 rounded-md p-2.5 text-gray-700"
@@ -93,7 +92,7 @@ export default function Navbar({ session }: { session: Session }) {
                       signIn('google', { callbackUrl: '/documents' });
                     }
                   }}
-                  className="-mx-3 block max-w-max rounded-md bg-primary py-2.5 px-3 text-base font-semibold leading-7 text-white hover:bg-gray-50 hover:text-gray-900"
+                  className="rounded-md border border-gray-500 py-2.5 px-3 text-sm font-semibold text-gray-900 transition-all duration-200 hover:rounded-[100px]"
                 >
                   {session ? 'Dashboard' : 'Login'}{' '}
                 </Link>

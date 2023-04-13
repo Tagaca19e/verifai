@@ -50,7 +50,7 @@ export default function Documents({
       <Header filterUserDocuments={filterUserDocuments} session={session} />
       <div className="bg-white">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
-          <div className="my-8 flex gap-8">
+          <div className="my-8 flex gap-8 overflow-auto">
             <Link href="/documents/new">
               <span className="flex h-[250px] w-[175px] cursor-pointer items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50">
                 <PlusIcon className="h-11 w-11 text-gray-800" />
@@ -79,7 +79,7 @@ export default function Documents({
                 key={document._id}
                 className="group relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white"
               >
-                <div className="aspect-h-4 aspect-w-3 overflow-hidden bg-gray-50 p-2 sm:aspect-none group-hover:opacity-75 sm:h-96">
+                <div className="h-96 overflow-hidden bg-gray-50 p-2 aspect-none group-hover:opacity-75">
                   <span
                     className="text-[10px]"
                     dangerouslySetInnerHTML={{ __html: document.content }}
