@@ -73,7 +73,7 @@ export default function Documents({
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-8">
+          <div className="mb-16 grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-8">
             {currentUserDocuments.map((document) => (
               <div
                 key={document._id}
@@ -120,32 +120,23 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  // TODO(etagaca): Handle error when fetching user documents.
-  const response = await fetch(
-    `${process.env.NEXTJS_URL}/api/list-user-documents`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: session?.user?.email,
-      }),
-    }
-  );
-
   const client = await clientPromise;
   const db = client.db('verifai');
+
+  const userDocuments = await db
+    .collection('documents')
+    .find({ owner: session?.user?.email })
+    .toArray();
+
   const documentTemplates = await db
     .collection('document_templates')
     .find()
     .toArray();
 
-  const data = await response.json();
   return {
     props: {
       session,
-      userDocuments: data.documents,
+      userDocuments,
       documentTemplates,
     },
   };
