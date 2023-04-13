@@ -144,8 +144,10 @@ export default function TextInput({
           errorTextCount: 0,
         };
 
+        // TODO(etagaca): Sometimes the metrics do not show up even though the
+        // text is highlighted as AI generated.
         inputTextResults.forEach((result) => {
-          if (Object.keys(result.metrics).length) {
+          if (result.details.length) {
             overallGptScore += result.score.gpt || 0;
             overallHumanScore += result.score.human || 0;
             overallMetrics.coherence += result.metrics.coherence || 0;

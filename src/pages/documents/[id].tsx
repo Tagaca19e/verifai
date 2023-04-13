@@ -13,7 +13,7 @@ import { getSession, signOut } from 'next-auth/react';
 import { hasCookie, setCookie } from 'cookies-next';
 import { Menu, Transition } from '@headlessui/react';
 import { Session } from 'src/utils/types';
-import { UserDocument } from '@/utils/interfaces';
+import { UserDocument, DocumentTemplate } from '@/utils/interfaces';
 
 const userNavigation = [
   { name: 'Profile', href: '/', onClick: () => {} },
@@ -212,16 +212,45 @@ export default function Document({
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const session = await getSession(context);
-  const { id } = context.query;
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
 
   const client = await clientPromise;
   const db = client.db('verifai');
   const { req, res } = context;
+  const { id } = context.query;
 
-  // Set cookie for new document id to prevent redirect to error page.
-  if (id === 'new') {
-    let newDocumentId = createId(`${session?.user?.email}${Date.now()}`);
-    setCookie(newDocumentId, true, { req, res, maxAge: 300 });
+  // Set cookie for new document id to prevent redirect to error page or
+  // create new document from a document template.
+  if (id === 'new' || id === 'harry' || id === 'quantum') {
+    const newDocumentId = createId(`${session?.user?.email}${Date.now()}`);
+
+    switch (id) {
+      case 'new':
+        setCookie(newDocumentId, true, { req, res, maxAge: 300 });
+        break;
+
+      case 'harry':
+      case 'quantum':
+        const harryDocument = await db
+          .collection('document_templates')
+          // @ts-ignore
+          .findOne({ _id: id }, { projection: { _id: 0 } });
+        await db.collection('documents').insertOne({
+          // @ts-ignore
+          _id: newDocumentId,
+          owner: session?.user?.email,
+          ...harryDocument,
+        });
+        break;
+    }
 
     return {
       redirect: {
@@ -244,15 +273,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return {
       redirect: {
         destination: '/documents/error',
-        permanent: false,
-      },
-    };
-  }
-
-  if (!session) {
-    return {
-      redirect: {
-        destination: '/',
         permanent: false,
       },
     };
