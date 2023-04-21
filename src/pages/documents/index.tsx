@@ -1,13 +1,15 @@
 import clientPromise from 'lib/mongodb';
 import Header from '@/components/documents/Header';
 import Link from 'next/link';
+import mammoth from 'mammoth';
+import React, { useRef, useState } from 'react';
+import { ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { GetServerSidePropsContext } from 'next';
 import { getSession } from 'next-auth/react';
 import { PlusIcon } from '@heroicons/react/20/solid';
 import { Session } from 'src/utils/types';
-import { TrashIcon } from '@heroicons/react/24/outline';
 import { UserDocument } from 'src/utils/interfaces';
-import { useState } from 'react';
+import Router from 'next/router';
 
 export default function Documents({
   session,
@@ -45,18 +47,82 @@ export default function Documents({
     setCurrentUserDocuments(filteredDocuments);
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadFile = async () => {
+    fileInputRef.current?.click();
+  };
+
+  interface MammothRawTextResult {
+    value: string;
+    messages: any[] | undefined;
+  }
+
+  const createNewDocumentFromFileUpload = async (
+    event: React.FormEvent<HTMLInputElement>
+  ) => {
+    if (event.currentTarget.files) {
+      const file = event.currentTarget.files[0];
+      const fileReader = new FileReader();
+      fileReader.readAsArrayBuffer(file);
+
+      fileReader.onload = async () => {
+        const buffer = Buffer.from(fileReader.result as ArrayBuffer);
+
+        mammoth
+          .extractRawText({ arrayBuffer: buffer })
+          .then(async (result: MammothRawTextResult) => {
+            const content = result.value.replaceAll('\n', '<br/>');
+            const response = await fetch('/api/upload-file', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                title: file.name,
+                content: content,
+              }),
+            });
+
+            const data = await response.json();
+            if (response.status === 200) {
+              Router.push(`/documents/${data.documentId}`);
+            }
+          });
+      };
+    }
+  };
+
   return (
     <>
       <Header filterUserDocuments={filterUserDocuments} session={session} />
       <div className="bg-white">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
           <div className="my-8 flex gap-8 overflow-auto">
-            <Link href="/documents/new">
-              <span className="flex h-[250px] w-[175px] cursor-pointer items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50">
+            {/* Add new document */}
+            <span className="relative flex h-[250px] w-[175px] cursor-pointer flex-col items-center justify-center rounded-md border border-gray-200">
+              <Link
+                className="flex h-full w-full items-center justify-center bg-gray-50 hover:bg-gray-100"
+                href="/documents/new"
+              >
                 <PlusIcon className="h-11 w-11 text-gray-800" />
+              </Link>
+              <span
+                onClick={uploadFile}
+                className="absolute bottom-0 z-30 flex w-full items-center justify-center bg-white py-2 text-sm text-gray-800 hover:text-red-400"
+              >
+                <ArrowUpOnSquareIcon className="mr-2 inline-block h-5 w-5 text-red-400" />
+                Upload
               </span>
-            </Link>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={createNewDocumentFromFileUpload}
+                className="hidden"
+                accept=".docx"
+              />
+            </span>
 
+            {/* Document templates */}
             {documentTemplates.map((document) => (
               <div key={document._id}>
                 <Link href={`../documents/${document._id}`}>
@@ -73,13 +139,15 @@ export default function Documents({
               </div>
             ))}
           </div>
+
           <div className="mb-16 grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-8">
+            {/* User documents */}
             {currentUserDocuments.map((document) => (
               <div
                 key={document._id}
                 className="group relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white"
               >
-                <div className="h-96 overflow-hidden bg-gray-50 p-2 aspect-none group-hover:opacity-75">
+                <div className="aspect-none h-96 overflow-hidden bg-gray-50 p-2 group-hover:opacity-75">
                   <span
                     className="text-[10px]"
                     dangerouslySetInnerHTML={{ __html: document.content }}
