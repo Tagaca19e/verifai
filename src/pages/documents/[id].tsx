@@ -13,7 +13,7 @@ import { getSession, signOut } from 'next-auth/react';
 import { hasCookie, setCookie } from 'cookies-next';
 import { Menu, Transition } from '@headlessui/react';
 import { Session } from 'src/utils/types';
-import { UserDocument, DocumentTemplate } from '@/utils/interfaces';
+import { UserDocument } from '@/utils/interfaces';
 
 const userNavigation = [
   { name: 'Profile', href: '/', onClick: () => {} },
@@ -55,7 +55,7 @@ export default function Document({
     setUserDocument(document);
   };
 
-  const { results, setResults } = useContext<AppContextProps>(AppContext);
+  const { setResults } = useContext<AppContextProps>(AppContext);
   const [userDocument, setUserDocument] = useState<UserDocument>({
     _id: savedDocument?._id || newDocumentId,
     owner: session.user.email,
@@ -124,11 +124,12 @@ export default function Document({
                   <div className="my-auto">
                     {/* Document title  */}
                     <input
-                      onChange={(e) => setDocumentTitle(e.target.value)}
+                      autoComplete="off"
                       type="text"
                       name="file_title"
                       value={documentTitle}
                       className="block w-full rounded-md border-0 py-1.5  ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm sm:leading-6"
+                      onChange={(e) => setDocumentTitle(e.target.value)}
                     />
                   </div>
                 </div>
@@ -187,7 +188,7 @@ export default function Document({
               {/* Primary column */}
               <section
                 aria-labelledby="primary-heading"
-                className="flex h-full sm:w-[800px] min-w-0 flex-1 flex-col lg:order-last"
+                className="flex h-full min-w-0 flex-1 flex-col sm:w-[800px] lg:order-last"
               >
                 <TextInput
                   savedDocument={savedDocument}
