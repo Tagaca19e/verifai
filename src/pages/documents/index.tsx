@@ -3,13 +3,13 @@ import Header from '@/components/documents/Header';
 import Link from 'next/link';
 import mammoth from 'mammoth';
 import React, { useRef, useState } from 'react';
+import Router from 'next/router';
 import { ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { GetServerSidePropsContext } from 'next';
 import { getSession } from 'next-auth/react';
 import { PlusIcon } from '@heroicons/react/20/solid';
 import { Session } from 'src/utils/types';
 import { UserDocument } from 'src/utils/interfaces';
-import Router from 'next/router';
 
 export default function Documents({
   session,
@@ -67,27 +67,35 @@ export default function Documents({
 
       fileReader.onload = async () => {
         const buffer = Buffer.from(fileReader.result as ArrayBuffer);
+        let content = '';
+        switch (file.type) {
+          case 'text/plain':
+            content = buffer.toString().replaceAll('\n', '<br/>');
+            break;
 
-        mammoth
-          .extractRawText({ arrayBuffer: buffer })
-          .then(async (result: MammothRawTextResult) => {
-            const content = result.value.replaceAll('\n', '<br/>');
-            const response = await fetch('/api/upload-file', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                title: file.name,
-                content: content,
-              }),
-            });
+          case 'application/msword':
+            content = await mammoth
+              .extractRawText({ arrayBuffer: buffer })
+              .then(async (result: MammothRawTextResult) => {
+                return result.value.replaceAll('\n', '<br/>');
+              });
+        }
 
-            const data = await response.json();
-            if (response.status === 200) {
-              Router.push(`/documents/${data.documentId}`);
-            }
-          });
+        const response = await fetch('/api/upload-file', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: file.name,
+            content: content,
+          }),
+        });
+
+        const data = await response.json();
+        if (response.status === 200) {
+          Router.push(`/documents/${data.documentId}`);
+        }
       };
     }
   };
@@ -118,7 +126,7 @@ export default function Documents({
                 ref={fileInputRef}
                 onChange={createNewDocumentFromFileUpload}
                 className="hidden"
-                accept=".docx"
+                accept=".docx,.txt"
               />
             </span>
 
