@@ -68,12 +68,14 @@ export default function Documents({
       fileReader.onload = async () => {
         const buffer = Buffer.from(fileReader.result as ArrayBuffer);
         let content = '';
+
+        console.log('file.type: ', file.type);
         switch (file.type) {
           case 'text/plain':
             content = buffer.toString().replaceAll('\n', '<br/>');
             break;
 
-          case 'application/msword':
+          case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             content = await mammoth
               .extractRawText({ arrayBuffer: buffer })
               .then(async (result: MammothRawTextResult) => {
