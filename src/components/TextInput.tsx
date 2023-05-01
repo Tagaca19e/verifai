@@ -1,4 +1,5 @@
 import { AppContext } from './AppContextProvider';
+import { ChatBubbleLeftIcon, PlayCircleIcon } from '@heroicons/react/24/solid';
 import { RefObject, useContext, useRef } from 'react';
 import {
   AppContextProps,
@@ -17,7 +18,8 @@ export default function TextInput({
   getCaretIndexPosition: (resetCaretIndexPosition?: boolean) => void;
   updateUserDocument: (document: UserDocument) => void;
 }) {
-  const { setIsLoading, setResults } = useContext<AppContextProps>(AppContext);
+  const { isLoading, setIsLoading, setResults } =
+    useContext<AppContextProps>(AppContext);
   const textInputRef: RefObject<HTMLDivElement> = useRef(null);
 
   /* Removes all html content from the clipboard. */
@@ -68,6 +70,7 @@ export default function TextInput({
   };
 
   const handleSubmit = () => {
+    if (isLoading) return;
     function verifyText(textId: number, sentence: string) {
       if (!sentence) return;
       return fetch('../api/validate-input', {
@@ -189,7 +192,7 @@ export default function TextInput({
   return (
     <div className="p-8">
       <div className="mt-2">
-        <div className="-m-0.5 rounded-lg p-0.5">
+        <div className="relative -m-0.5 rounded-lg p-0.5">
           <div
             ref={textInputRef}
             className="min-h-[600px] rounded-md border-0 p-3 text-lg text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none"
@@ -201,16 +204,18 @@ export default function TextInput({
             onInput={handleInput}
             dangerouslySetInnerHTML={{ __html: savedDocument?.content || '' }}
           ></div>
+          <button
+            type="submit"
+            onClick={handleSubmit}
+            className="absolute top-[50px] right-[-17.5px] inline-flex items-center rounded-full bg-white px-1 py-3 text-sm font-semibold text-primary shadow-lg ring-1 ring-inset ring-primary hover:border-primary hover:bg-primary hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            {isLoading ? (
+              <ChatBubbleLeftIcon className="h-8 w-8 animate-pulse" />
+            ) : (
+              <PlayCircleIcon className="h-8 w-8" />
+            )}
+          </button>
         </div>
-      </div>
-      <div className="mt-2 flex justify-end">
-        <button
-          type="submit"
-          onClick={handleSubmit}
-          className="inline-flex items-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary_dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >
-          Verify
-        </button>
       </div>
     </div>
   );

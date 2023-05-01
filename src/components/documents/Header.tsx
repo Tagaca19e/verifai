@@ -8,7 +8,6 @@ import { Session } from 'src/utils/types';
 import { signOut } from 'next-auth/react';
 
 const userNavigation = [
-  { name: 'Profile', href: '#' },
   { name: 'Sign out', href: '#', onClick: () => signOut() },
 ];
 
