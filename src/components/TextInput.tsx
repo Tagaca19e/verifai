@@ -1,5 +1,5 @@
 import { AppContext } from './AppContextProvider';
-import { ChatBubbleLeftIcon, PlayCircleIcon } from '@heroicons/react/24/solid';
+import { PlayCircleIcon, SparklesIcon } from '@heroicons/react/24/solid';
 import { RefObject, useContext, useRef } from 'react';
 import {
   AppContextProps,
@@ -207,12 +207,12 @@ export default function TextInput({
           <button
             type="submit"
             onClick={handleSubmit}
-            className="absolute top-[50px] right-[-17.5px] inline-flex items-center rounded-full bg-white px-1 py-3 text-sm font-semibold text-primary shadow-lg ring-1 ring-inset ring-primary hover:border-primary hover:bg-primary hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="absolute top-[50px] right-[-15px] inline-flex items-center rounded-full bg-white px-1 py-3 text-sm font-semibold text-primary shadow-lg ring-1 ring-inset hover:border-primary hover:text-primary_dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {isLoading ? (
-              <ChatBubbleLeftIcon className="h-8 w-8 animate-pulse" />
+              <SparklesIcon className="h-7 w-7 animate-pulse" />
             ) : (
-              <PlayCircleIcon className="h-8 w-8" />
+              <PlayCircleIcon className="h-7 w-7" />
             )}
           </button>
         </div>
