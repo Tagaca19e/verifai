@@ -22,6 +22,7 @@ export default function Documents({
 }) {
   const [currentUserDocuments, setCurrentUserDocuments] =
     useState<UserDocument[]>(userDocuments);
+  const [filterTerm, setFilterTerm] = useState<string>('');
 
   const handleDelete = async (documentId: string) => {
     let res = await fetch('/api/delete-document', {
@@ -39,12 +40,9 @@ export default function Documents({
     setCurrentUserDocuments(data.updatedDocuments);
   };
 
+  /* Filters documents based on search term */
   const filterUserDocuments = (searchTerm: string) => {
-    const filteredDocuments = userDocuments.filter((document) => {
-      return document.title.toLowerCase().includes(searchTerm.toLowerCase());
-    });
-
-    setCurrentUserDocuments(filteredDocuments);
+    setFilterTerm(searchTerm);
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -151,31 +149,40 @@ export default function Documents({
           <div className="mb-16 grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-4 lg:gap-x-8">
             {/* User documents */}
             {currentUserDocuments.map((document) => (
-              <div
-                key={document._id}
-                className="group relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white"
-              >
-                <div className="aspect-none h-96 overflow-hidden bg-gray-50 p-2 group-hover:opacity-75">
-                  <span
-                    className="text-[10px]"
-                    dangerouslySetInnerHTML={{ __html: document.content }}
-                  ></span>
-                </div>
-                <div className="flex flex-1 items-center justify-between p-4">
-                  <h3 className="text-sm font-medium text-gray-900">
-                    <Link href={`../documents/${document._id}`}>
-                      <span aria-hidden="true" className="absolute inset-0" />
-                      {document.title}
-                    </Link>
-                  </h3>
-                  <a
-                    className="relative z-20 cursor-pointer rounded-full p-2 hover:bg-gray-200"
-                    onClick={() => handleDelete(document._id)}
+              <>
+                {document.title
+                  .toLowerCase()
+                  .includes(filterTerm.toLowerCase()) && (
+                  <div
+                    key={document._id}
+                    className="group relative flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white"
                   >
-                    <TrashIcon className="m-0 h-5 text-red-400" />
-                  </a>
-                </div>
-              </div>
+                    <div className="aspect-none h-96 overflow-hidden bg-gray-50 p-2 group-hover:opacity-75">
+                      <span
+                        className="text-[10px]"
+                        dangerouslySetInnerHTML={{ __html: document.content }}
+                      ></span>
+                    </div>
+                    <div className="flex flex-1 items-center justify-between p-4">
+                      <h3 className="text-sm font-medium text-gray-900">
+                        <Link href={`../documents/${document._id}`}>
+                          <span
+                            aria-hidden="true"
+                            className="absolute inset-0"
+                          />
+                          {document.title}
+                        </Link>
+                      </h3>
+                      <a
+                        className="relative z-20 cursor-pointer rounded-full p-2 hover:bg-gray-200"
+                        onClick={() => handleDelete(document._id)}
+                      >
+                        <TrashIcon className="m-0 h-5 text-red-400" />
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </>
             ))}
           </div>
         </div>
