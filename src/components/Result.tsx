@@ -3,12 +3,14 @@ import ResultCard from './ResultCard';
 import ResultCardLoader from './loaders/ResultCardLoader';
 import { AppContext } from './AppContextProvider';
 import { AppContextProps, InputTextResult } from 'src/utils/interfaces';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState, MouseEvent } from 'react';
 
 export default function Result({
   activeResultId,
+  onChangeActiveResultId,
 }: {
   activeResultId: string | null;
+  onChangeActiveResultId: (id: string | null) => void;
 }) {
   const { isLoading, results, error } = useContext<AppContextProps>(AppContext);
   const [showResults, setShowResults] = useState(false);
@@ -21,11 +23,35 @@ export default function Result({
     }
   }, [isLoading, results, error, showResults]);
 
+  // Close the results when clicking outside of the results.
+  useEffect(() => {
+    function handleClick(this: HTMLElement, ev: Event) {
+      let element = ev.target as HTMLElement;
+      if (element.dataset.label !== 'result') {
+        onChangeActiveResultId(null);
+      }
+    }
+
+    document.addEventListener('click', handleClick);
+
+    return () => {
+      document.removeEventListener('click', handleClick);
+    };
+  }, [activeResultId, onChangeActiveResultId]);
+
   return (
     <div className="h-max sm:w-[500px]">
       {showResults &&
         results.map((inputTextResult) => (
-          <div key={inputTextResult.id}>
+          <div
+            key={inputTextResult.id}
+            className="cursor-pointer"
+            onClick={(event) => {
+              // Stop the event from bubbling up to the parent.
+              event.stopPropagation();
+              onChangeActiveResultId(inputTextResult.id);
+            }}
+          >
             {!inputTextResult.error ? (
               <div
                 className={`transition-all duration-200 ease-linear ${

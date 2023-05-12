@@ -23,10 +23,10 @@ export default function TextMetrics({
               {userDocument.rating.gpt ? userDocument.rating.gpt.toFixed(2) : 0}{' '}
               %
             </h2>
-            <h1>Overall score</h1>
+            <p className="mt-2 text-sm text-gray-700">AI Content Percentage</p>
           </div>
           <div className="m-3">
-            <h1 className="rounded-md border border-gray-300 p-3 text-base text-gray-800 font-semibold">
+            <h1 className="rounded-md border border-gray-300 p-3 text-base font-semibold text-gray-800">
               Metrics
             </h1>
             <ul className="p-3">
