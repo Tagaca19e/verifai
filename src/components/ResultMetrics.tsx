@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import ResultMetricsLoader from './loaders/ResultMetricsLoader';
 import { AppContext } from './AppContextProvider';
 import { AppContextProps, UserDocument } from 'src/utils/interfaces';
+import MetricCard from './MetricCard';
 
 export default function TextMetrics({
   userDocument,
@@ -18,24 +19,24 @@ export default function TextMetrics({
       ) : (
         <>
           <div className="m-3 rounded-md border border-gray-300 p-3">
-            <h2>{userDocument.rating.gpt.toFixed(2)}</h2>
-            <h1>Overall score</h1>
+            <h2 className="text-gray-700">
+              {userDocument.rating.gpt ? userDocument.rating.gpt.toFixed(2) : 0}{' '}
+              %
+            </h2>
+            <p className="mt-2 text-sm text-gray-700">AI Content Percentage</p>
           </div>
           <div className="m-3">
-            <h1 className="rounded-md border border-gray-300 p-3 text-base font-semibold">
+            <h1 className="rounded-md border border-gray-300 p-3 text-base font-semibold text-gray-800">
               Metrics
             </h1>
             <ul className="p-3">
-              {Object.keys(metrics).map((metric) => {
-                return (
-                  metric !== 'errorTextCount' && (
-                    <li key={metric} className="mb-3">
-                      <h1 className="capitalize">{metric}</h1>
-                      <p> {metrics[metric]?.toFixed(2) || 0} </p>
-                    </li>
-                  )
-                );
-              })}
+              <MetricCard name="Coherence" value={metrics.coherence || 0} />
+              <MetricCard name="Repetition" value={metrics.repetition || 0} />
+              <MetricCard
+                name="Personal Style"
+                value={metrics.personality || 0}
+              />
+              <MetricCard name="Originality" value={metrics.originality || 0} />
             </ul>
           </div>
         </>

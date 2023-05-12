@@ -51,6 +51,11 @@ export default function Document({
     setActiveResultId(selectedElement?.id || null);
   };
 
+  /* Updates active result id when clicking on the result card. */
+  function updateActiveResultId(id: string | null) {
+    setActiveResultId(id);
+  }
+
   const updateUserDocument = async (document: UserDocument) => {
     setUserDocument(document);
   };
@@ -194,6 +199,7 @@ export default function Document({
                   savedDocument={savedDocument}
                   userDocument={userDocument}
                   getCaretIndexPosition={getCaretIndexPosition}
+                  activeResultId={activeResultId}
                   updateUserDocument={updateUserDocument}
                 />
               </section>
@@ -201,7 +207,10 @@ export default function Document({
 
             {/* Secondary column (hidden on smaller screens) */}
             <aside className="hidden w-fit overflow-y-scroll border-l border-gray-200 bg-white lg:flex lg:w-[500px] xl:w-[700px]">
-              <Result activeResultId={activeResultId} />
+              <Result
+                activeResultId={activeResultId}
+                onChangeActiveResultId={updateActiveResultId}
+              />
               <ResultMetrics userDocument={userDocument} />
             </aside>
           </div>

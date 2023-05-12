@@ -6,21 +6,38 @@ import {
   InputTextResult,
   UserDocument,
 } from 'src/utils/interfaces';
+import { useEffect } from 'react';
 
 export default function TextInput({
   savedDocument,
   userDocument,
   getCaretIndexPosition,
+  activeResultId,
   updateUserDocument,
 }: {
   savedDocument?: UserDocument;
   userDocument: UserDocument;
   getCaretIndexPosition: (resetCaretIndexPosition?: boolean) => void;
+  activeResultId: string | null;
   updateUserDocument: (document: UserDocument) => void;
 }) {
   const { isLoading, setIsLoading, setResults } =
     useContext<AppContextProps>(AppContext);
   const textInputRef: RefObject<HTMLDivElement> = useRef(null);
+
+  useEffect(() => {
+    let children = textInputRef.current?.getElementsByTagName('span');
+    if (children) {
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        if (activeResultId === child.id) {
+          child.classList.add('bg-red-100');
+        } else {
+          child.classList.remove('bg-red-100');
+        }
+      }
+    }
+  }, [activeResultId]);
 
   /* Removes all html content from the clipboard. */
   const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
@@ -61,6 +78,7 @@ export default function TextInput({
       if (text.match(/<\/?span[\sa-z=\-0-9"]*>/gi)) {
         const paragraphElement = selection.anchorNode?.parentElement;
         paragraphElement?.classList.remove('border-b-2');
+        paragraphElement?.classList.remove('bg-red-100');
       }
     }
     updateUserDocument({
@@ -123,7 +141,7 @@ export default function TextInput({
             if (inputTextResult.score.gpt > inputTextResult.score.human) {
               replaceMentTexts[
                 i
-              ] = `<span id="${i}" class="border-b-2 border-red-400">${replaceMentTexts[i]}</span>`;
+              ] = `<span id="${i}" data-label="result" class="border-b-2 border-red-400 transition-all duration-200">${replaceMentTexts[i]}</span>`;
             }
             inputTextResults[i].id = i.toString();
           }
@@ -198,7 +216,10 @@ export default function TextInput({
             className="min-h-[600px] rounded-md border-0 p-3 text-lg text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none"
             contentEditable
             onBlur={() => getCaretIndexPosition(true)}
-            onClick={() => getCaretIndexPosition()}
+            onClick={(event) => {
+              event.stopPropagation();
+              getCaretIndexPosition();
+            }}
             onKeyDown={handleKeyDown}
             onPaste={handlePaste}
             onInput={handleInput}
