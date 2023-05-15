@@ -107,7 +107,7 @@ export default function Documents({
             {/* Add new document */}
             <span className="relative flex h-[250px] w-[175px] cursor-pointer flex-col items-center justify-center rounded-md border border-gray-200">
               <Link
-                className="flex h-full w-full items-center justify-center bg-gray-50 hover:bg-gray-100"
+                className="flex h-full w-[175px] items-center justify-center bg-gray-50 hover:bg-gray-100"
                 href="/documents/new"
               >
                 <PlusIcon className="h-11 w-11 text-gray-800" />

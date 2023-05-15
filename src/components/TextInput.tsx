@@ -208,7 +208,7 @@ export default function TextInput({
   };
 
   return (
-    <div className="p-8">
+    <div className="w-[100vw] p-8 lg:w-[unset]">
       <div className="mt-2">
         <div className="relative -m-0.5 rounded-lg p-0.5">
           <div
