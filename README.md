@@ -1,38 +1,28 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Overview
+Verifai is an application where you could verify if contet/text is written by AI. Some of the models that it could detect are OpenAI’s GPT models and Google’s BARD model. The accuracy of it is still not guaranteed and needs to be used with caution. Full information about the project can be found [here](https://docs.google.com/presentation/d/1-NYUL7cNRLZ8P7j8_9K7xmAjeKX3KJPH25CAVqFnVHM/edit?usp=sharing).
 
-## Getting Started
+#### Some Features include:
+- Supports document uploads (.docx and .txt)
+- Enable to save (auto save) and delete documents
+- Filter documents through the dashboard for searching
+- Verify text with text highlights, reasons, and metrics
+- Login and logout with Google accounts
+- Responsive web application
 
-First, run the development server:
+## Demo
+https://github.com/Tagaca19e/verifai/assets/85138779/0a7b2115-702b-46d0-afba-4bbdc471d715
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+## Implementation
+![Screenshot 2023-05-24 at 7 53 47 PM](https://github.com/Tagaca19e/verifai/assets/85138779/a6c8d2ed-c46a-4e89-aa2e-d4e87a22516e)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Components
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## Data Utilization
+![Screenshot 2023-05-24 at 7 51 57 PM](https://github.com/Tagaca19e/verifai/assets/85138779/92671b17-b7ca-4e6f-91b2-61c70039d262)
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
